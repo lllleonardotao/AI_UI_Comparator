@@ -38,7 +38,9 @@ const mimeTypes = {
   '.ico': 'image/x-icon'
 };
 
-const PORT = 3000;
+// 从环境变量读取端口，Zeabur 等平台会动态分配端口
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
@@ -151,9 +153,10 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log(`\n🚀 本地服务器已启动！`);
   console.log(`📡 访问地址: http://localhost:${PORT}`);
+  console.log(`📡 监听地址: ${HOST}:${PORT}`);
   if (!API_KEY) {
     console.log(`\n⚠️  警告: 未找到 OPENROUTER_API_KEY`);
     console.log(`   请创建 .env 文件并添加: OPENROUTER_API_KEY=你的API密钥`);
