@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型中台 - AI UI Comparator Admin</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Plus Jakarta Sans Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0c0a09 0%, #1c1917 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="text-stone-100">
+
+    <!-- 顶部导航栏 -->
+    <nav class="bg-stone-900/50 backdrop-blur-sm border-b border-stone-800">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl font-bold text-amber-500">🔧 模型中台</h1>
+                    <span class="text-sm text-stone-500">Model Hub Admin</span>
+                </div>
+                <a href="index.html" class="px-4 py-2 bg-stone-800 hover:bg-stone-700 rounded-lg text-sm transition-colors">
+                    ← 返回首页
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- Supabase 配置卡片 -->
+        <div class="bg-stone-900/50 backdrop-blur-sm rounded-2xl p-6 border border-stone-800 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-amber-500">⚙️ Supabase 配置</h2>
+                <span id="connection-status" class="text-sm text-stone-500">未连接</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm text-stone-400 mb-2">Supabase URL</label>
+                    <input
+                        type="text"
+                        id="supabase-url"
+                        placeholder="https://xxxxx.supabase.co"
+                        class="w-full px-4 py-2 bg-stone-800/50 border border-stone-700 rounded-lg text-stone-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 transition-colors"
+                    />
+                </div>
+                <div>
+                    <label class="block text-sm text-stone-400 mb-2">Supabase Anon Key</label>
+                    <input
+                        type="password"
+                        id="supabase-key"
+                        placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        class="w-full px-4 py-2 bg-stone-800/50 border border-stone-700 rounded-lg text-stone-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 transition-colors"
+                    />
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button
+                    onclick="saveSupabaseConfig()"
+                    class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-stone-900 font-semibold rounded-lg transition-colors"
+                >
+                    保存配置
+                </button>
+                <button
+                    onclick="testConnection()"
+                    class="px-6 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition-colors"
+                >
+                    测试连接
+                </button>
+            </div>
+        </div>
+
+        <!-- OpenRouter API Key 配置 -->
+        <div class="bg-stone-900/50 backdrop-blur-sm rounded-2xl p-6 border border-stone-800 mb-6">
+            <h2 class="text-lg font-semibold text-amber-500 mb-4">🔑 OpenRouter API Key</h2>
+            <div class="flex gap-3">
+                <input
+                    type="password"
+                    id="openrouter-key"
+                    placeholder="sk-or-v1-xxxxx"
+                    class="flex-1 px-4 py-2 bg-stone-800/50 border border-stone-700 rounded-lg text-stone-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 transition-colors"
+                />
+                <button
+                    onclick="saveOpenRouterKey()"
+                    class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-stone-900 font-semibold rounded-lg transition-colors"
+                >
+                    保存
+                </button>
+            </div>
+            <p class="text-xs text-stone-500 mt-2">用于测试模型时调用 OpenRouter API</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-stone-900/50 backdrop-blur-sm rounded-xl p-4 border border-stone-800">
+                <div class="text-sm text-stone-400 mb-1">总模型数</div>
+                <div class="text-2xl font-bold text-stone-100" id="stat-total">0</div>
+            </div>
+            <div class="bg-stone-900/50 backdrop-blur-sm rounded-xl p-4 border border-stone-800">
+                <div class="text-sm text-stone-400 mb-1">已验证</div>
+                <div class="text-2xl font-bold text-emerald-400" id="stat-verified">0</div>
+            </div>
+            <div class="bg-stone-900/50 backdrop-blur-sm rounded-xl p-4 border border-stone-800">
+                <div class="text-sm text-stone-400 mb-1">部分通过</div>
+                <div class="text-2xl font-bold text-amber-400" id="stat-partial">0</div>
+            </div>
+            <div class="bg-stone-900/50 backdrop-blur-sm rounded-xl p-4 border border-stone-800">
+                <div class="text-sm text-stone-400 mb-1">待测试</div>
+                <div class="text-2xl font-bold text-stone-400" id="stat-pending">0</div>
+            </div>
+        </div>
+
+        <!-- 操作按钮区 -->
+        <div class="bg-stone-900/50 backdrop-blur-sm rounded-2xl p-6 border border-stone-800 mb-6">
+            <div class="flex flex-wrap gap-3">
+                <button
+                    onclick="syncFromOpenRouter()"
+                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    id="btn-sync"
+                    disabled
+                >
+                    🔄 同步 OpenRouter 模型
+                </button>
+                <button
+                    onclick="batchTest()"
+                    class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    id="btn-batch-test"
+                    disabled
+                >
+                    ▶️ 批量测试
+                </button>
+                <button
+                    onclick="refreshModels()"
+                    class="px-6 py-2 bg-stone-700 hover:bg-stone-600 text-stone-200 rounded-lg transition-colors"
+                >
+                    🔄 刷新列表
+                </button>
+            </div>
+        </div>
+
+        <!-- 模型列表 -->
+        <div class="bg-stone-900/50 backdrop-blur-sm rounded-2xl p-6 border border-stone-800">
+            <h2 class="text-lg font-semibold text-amber-500 mb-4">📋 模型列表</h2>
+
+            <!-- 筛选器 -->
+            <div class="flex gap-3 mb-4">
+                <select
+                    id="filter-status"
+                    onchange="filterModels()"
+                    class="px-4 py-2 bg-stone-800/50 border border-stone-700 rounded-lg text-stone-200 focus:outline-none focus:border-amber-500 transition-colors"
+                >
+                    <option value="all">全部状态</option>
+                    <option value="verified">已验证</option>
+                    <option value="partial">部分通过</option>
+                    <option value="failed">失败</option>
+                    <option value="pending">待测试</option>
+                </select>
+                <select
+                    id="filter-type"
+                    onchange="filterModels()"
+                    class="px-4 py-2 bg-stone-800/50 border border-stone-700 rounded-lg text-stone-200 focus:outline-none focus:border-amber-500 transition-colors"
+                >
+                    <option value="all">全部类型</option>
+                    <option value="image">图片生成</option>
+                    <option value="code">代码生成</option>
+                    <option value="text">文本生成</option>
+                </select>
+                <input
+                    type="text"
+                    id="search-input"
+                    placeholder="搜索模型名称或ID..."
+                    oninput="filterModels()"
+                    class="flex-1 px-4 py-2 bg-stone-800/50 border border-stone-700 rounded-lg text-stone-200 placeholder-stone-600 focus:outline-none focus:border-amber-500 transition-colors"
+                />
+            </div>
+
+            <!-- 表格 -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-stone-800">
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-stone-400">模型ID</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-stone-400">名称</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-stone-400">提供商</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-stone-400">类型</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-stone-400">验证状态</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-stone-400">得分</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-stone-400">成本</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-stone-400">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="models-table-body">
+                        <tr>
+                            <td colspan="8" class="text-center py-8 text-stone-500">
+                                请先配置 Supabase 连接
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==================== 全局变量 ====================
+        let supabase = null;
+        let allModels = [];
+
+        // ==================== 初始化 ====================
+        window.onload = function() {
+            loadSupabaseConfig();
+            loadOpenRouterKey();
+        };
+
+        // ==================== Supabase 配置管理 ====================
+        function loadSupabaseConfig() {
+            const url = localStorage.getItem('supabase_url');
+            const key = localStorage.getItem('supabase_key');
+
+            if (url && key) {
+                document.getElementById('supabase-url').value = url;
+                document.getElementById('supabase-key').value = key;
+                initSupabase(url, key);
+            }
+        }
+
+        function saveSupabaseConfig() {
+            const url = document.getElementById('supabase-url').value.trim();
+            const key = document.getElementById('supabase-key').value.trim();
+
+            if (!url || !key) {
+                alert('请输入完整的 Supabase URL 和 Key');
+                return;
+            }
+
+            localStorage.setItem('supabase_url', url);
+            localStorage.setItem('supabase_key', key);
+
+            initSupabase(url, key);
+            alert('✅ Supabase 配置已保存');
+        }
+
+        function initSupabase(url, key) {
+            try {
+                supabase = window.supabase.createClient(url, key);
+                document.getElementById('connection-status').textContent = '✅ 已连接';
+                document.getElementById('connection-status').classList.add('text-emerald-400');
+
+                // 启用按钮
+                document.getElementById('btn-sync').disabled = false;
+                document.getElementById('btn-batch-test').disabled = false;
+
+                // 自动加载模型列表
+                refreshModels();
+            } catch (error) {
+                console.error('Supabase 初始化失败:', error);
+                document.getElementById('connection-status').textContent = '❌ 连接失败';
+                document.getElementById('connection-status').classList.add('text-red-400');
+            }
+        }
+
+        async function testConnection() {
+            if (!supabase) {
+                alert('请先保存配置');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.from('models').select('count', { count: 'exact', head: true });
+
+                if (error) throw error;
+
+                alert('✅ 连接成功！数据库正常工作');
+            } catch (error) {
+                console.error('连接测试失败:', error);
+                alert('❌ 连接失败: ' + error.message);
+            }
+        }
+
+        // ==================== OpenRouter Key 管理 ====================
+        function loadOpenRouterKey() {
+            const key = localStorage.getItem('openrouter_api_key');
+            if (key) {
+                document.getElementById('openrouter-key').value = key;
+            }
+        }
+
+        function saveOpenRouterKey() {
+            const key = document.getElementById('openrouter-key').value.trim();
+            if (!key) {
+                alert('请输入 OpenRouter API Key');
+                return;
+            }
+            localStorage.setItem('openrouter_api_key', key);
+            alert('✅ OpenRouter API Key 已保存');
+        }
+
+        // ==================== 模型列表管理 ====================
+        async function refreshModels() {
+            if (!supabase) {
+                alert('请先配置 Supabase 连接');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('models')
+                    .select('*')
+                    .order('provider', { ascending: true });
+
+                if (error) throw error;
+
+                allModels = data || [];
+                renderModelsTable(allModels);
+                updateStats(allModels);
+
+                console.log('✅ 成功加载', allModels.length, '个模型');
+            } catch (error) {
+                console.error('加载模型失败:', error);
+                alert('❌ 加载模型失败: ' + error.message);
+            }
+        }
+
+        function renderModelsTable(models) {
+            const tbody = document.getElementById('models-table-body');
+
+            if (models.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-8 text-stone-500">
+                            暂无模型数据
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = models.map(model => `
+                <tr class="border-b border-stone-800 hover:bg-stone-800/30 transition-colors">
+                    <td class="py-3 px-4 text-sm text-stone-300 font-mono">${model.model_id}</td>
+                    <td class="py-3 px-4 text-sm text-stone-200">${model.name}</td>
+                    <td class="py-3 px-4 text-sm text-stone-400">${model.provider || '-'}</td>
+                    <td class="py-3 px-4 text-sm">
+                        ${getTypeBadge(model.detected_type)}
+                    </td>
+                    <td class="py-3 px-4 text-sm">
+                        ${getStatusBadge(model.verification_status)}
+                    </td>
+                    <td class="py-3 px-4 text-sm">
+                        <span class="font-semibold ${getScoreColor(model.verification_score)}">
+                            ${model.verification_score}/4
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-stone-400">
+                        $${(model.actual_cost || model.estimated_cost || 0).toFixed(4)}
+                    </td>
+                    <td class="py-3 px-4 text-sm">
+                        <button
+                            onclick="testModel('${model.model_id}')"
+                            class="px-3 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 rounded text-xs transition-colors"
+                        >
+                            测试
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'verified': '<span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-semibold">✓ 已验证</span>',
+                'partial': '<span class="px-2 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-semibold">⚠ 部分通过</span>',
+                'failed': '<span class="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-semibold">✗ 失败</span>',
+                'pending': '<span class="px-2 py-1 bg-stone-500/20 text-stone-400 rounded-full text-xs font-semibold">○ 待测试</span>'
+            };
+            return badges[status] || badges['pending'];
+        }
+
+        function getTypeBadge(type) {
+            const badges = {
+                'image': '<span class="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">🖼️ 图片</span>',
+                'code': '<span class="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">💻 代码</span>',
+                'text': '<span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">📝 文本</span>'
+            };
+            return badges[type] || '<span class="px-2 py-1 bg-stone-500/20 text-stone-400 rounded text-xs">❓ 未知</span>';
+        }
+
+        function getScoreColor(score) {
+            if (score === 4) return 'text-emerald-400';
+            if (score >= 2) return 'text-amber-400';
+            if (score > 0) return 'text-red-400';
+            return 'text-stone-500';
+        }
+
+        function updateStats(models) {
+            document.getElementById('stat-total').textContent = models.length;
+            document.getElementById('stat-verified').textContent = models.filter(m => m.verification_status === 'verified').length;
+            document.getElementById('stat-partial').textContent = models.filter(m => m.verification_status === 'partial').length;
+            document.getElementById('stat-pending').textContent = models.filter(m => m.verification_status === 'pending').length;
+        }
+
+        function filterModels() {
+            const statusFilter = document.getElementById('filter-status').value;
+            const typeFilter = document.getElementById('filter-type').value;
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+
+            let filtered = allModels;
+
+            if (statusFilter !== 'all') {
+                filtered = filtered.filter(m => m.verification_status === statusFilter);
+            }
+
+            if (typeFilter !== 'all') {
+                filtered = filtered.filter(m => m.detected_type === typeFilter);
+            }
+
+            if (searchText) {
+                filtered = filtered.filter(m =>
+                    m.model_id.toLowerCase().includes(searchText) ||
+                    m.name.toLowerCase().includes(searchText)
+                );
+            }
+
+            renderModelsTable(filtered);
+        }
+
+        // ==================== 占位函数（Phase 3-5 实现）====================
+        function syncFromOpenRouter() {
+            alert('🚧 此功能将在 Phase 3 实现');
+        }
+
+        function batchTest() {
+            alert('🚧 此功能将在 Phase 5 实现');
+        }
+
+        function testModel(modelId) {
+            alert('🚧 单模型测试功能将在 Phase 4 实现\n模型: ' + modelId);
+        }
+    </script>
+
+</body>
+</html>
