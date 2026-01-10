@@ -48,7 +48,9 @@
         <div class="bg-stone-900/50 backdrop-blur-sm rounded-2xl p-6 border border-stone-800 mb-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold text-amber-500">⚙️ Supabase 配置</h2>
-                <span id="connection-status" class="text-sm text-stone-500">未连接</span>
+                <div class="flex items-center gap-3">
+                    <span id="connection-status" class="text-sm text-stone-500 font-medium px-3 py-1 bg-stone-800/50 rounded-lg">未连接</span>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -248,12 +250,14 @@
             const key = document.getElementById('supabase-key').value.trim();
             const statusEl = document.getElementById('connection-status');
 
+            console.log('🔧 开始保存配置...');
+
             // 重置状态
-            statusEl.className = 'text-sm text-stone-500';
+            statusEl.className = 'text-sm text-blue-400 font-medium px-3 py-1 bg-blue-900/30 rounded-lg animate-pulse';
             statusEl.textContent = '⏳ 验证中...';
 
             if (!url || !key) {
-                statusEl.className = 'text-sm text-red-400';
+                statusEl.className = 'text-sm text-red-400 font-medium px-3 py-1 bg-red-900/30 rounded-lg';
                 statusEl.textContent = '❌ 请输入完整配置';
                 alert('❌ 请输入完整的 Supabase URL 和 Key');
                 return;
@@ -261,7 +265,7 @@
 
             // 验证 URL 格式
             if (!url.includes('.supabase.co')) {
-                statusEl.className = 'text-sm text-red-400';
+                statusEl.className = 'text-sm text-red-400 font-medium px-3 py-1 bg-red-900/30 rounded-lg';
                 statusEl.textContent = '❌ URL 格式错误';
                 alert('❌ Supabase URL 格式错误\n\n应该类似: https://xxxxx.supabase.co');
                 return;
@@ -269,7 +273,7 @@
 
             // 验证 Key 格式（JWT token 格式）
             if (!key.startsWith('eyJ')) {
-                statusEl.className = 'text-sm text-red-400';
+                statusEl.className = 'text-sm text-red-400 font-medium px-3 py-1 bg-red-900/30 rounded-lg';
                 statusEl.textContent = '❌ Key 格式错误';
                 alert('❌ Supabase Key 格式错误\n\n应该以 eyJ 开头');
                 return;
@@ -277,6 +281,7 @@
 
             localStorage.setItem('supabase_url', url);
             localStorage.setItem('supabase_key', key);
+            console.log('✅ 配置已保存到 localStorage');
 
             // 初始化并测试连接
             await initSupabase(url, key);
@@ -286,20 +291,24 @@
             const statusEl = document.getElementById('connection-status');
 
             try {
+                console.log('🔌 创建 Supabase 客户端...');
                 supabase = window.supabase.createClient(url, key);
 
                 // 立即测试连接
-                statusEl.className = 'text-sm text-blue-400';
+                statusEl.className = 'text-sm text-blue-400 font-medium px-3 py-1 bg-blue-900/30 rounded-lg animate-pulse';
                 statusEl.textContent = '🔄 测试连接中...';
 
+                console.log('📡 测试数据库连接...');
                 const { data, error } = await supabase
                     .from('models')
                     .select('count', { count: 'exact', head: true });
 
                 if (error) throw error;
 
+                console.log('✅ 连接成功！');
+
                 // 连接成功
-                statusEl.className = 'text-sm text-emerald-400 font-semibold';
+                statusEl.className = 'text-sm text-emerald-400 font-semibold px-3 py-1 bg-emerald-900/30 rounded-lg';
                 statusEl.textContent = '✅ 已连接并验证';
 
                 // 启用按钮
@@ -307,13 +316,14 @@
                 document.getElementById('btn-batch-test').disabled = false;
 
                 // 自动加载模型列表
+                console.log('📋 开始加载模型列表...');
                 await refreshModels();
 
-                // 显示成功消息
-                showToast('✅ Supabase 连接成功！已加载模型列表', 'success');
+                // 显示成功消息 - 使用 alert 确保用户看到
+                alert('✅ Supabase 连接成功！\n\n已加载模型列表');
             } catch (error) {
-                console.error('Supabase 连接失败:', error);
-                statusEl.className = 'text-sm text-red-400 font-semibold';
+                console.error('❌ Supabase 连接失败:', error);
+                statusEl.className = 'text-sm text-red-400 font-semibold px-3 py-1 bg-red-900/30 rounded-lg';
                 statusEl.textContent = '❌ 连接失败';
 
                 // 禁用按钮
@@ -329,7 +339,7 @@
                     errorMsg += '2. 网络连接问题\n';
                     errorMsg += '3. Supabase 项目未启动\n\n';
                     errorMsg += '请检查 URL 是否正确';
-                } else if (error.message.includes('JWT')) {
+                } else if (error.message.includes('JWT') || error.message.includes('JWTExpired')) {
                     errorMsg += '原因: API Key 无效\n';
                     errorMsg += '可能原因:\n';
                     errorMsg += '1. Key 输入错误或不完整\n';
