@@ -1,0 +1,30 @@
+# 环境变量和密钥
+.env
+.env.local
+*.key
+
+# 依赖
+node_modules/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# iCloud 元数据
+*.icloud
+
+# 临时文件
+*.log
+*.tmp
+~*
+
+# 备份
+backup-*/
+*.backup
