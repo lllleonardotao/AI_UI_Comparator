@@ -243,38 +243,103 @@
             }
         }
 
-        function saveSupabaseConfig() {
+        async function saveSupabaseConfig() {
             const url = document.getElementById('supabase-url').value.trim();
             const key = document.getElementById('supabase-key').value.trim();
+            const statusEl = document.getElementById('connection-status');
+
+            // 重置状态
+            statusEl.className = 'text-sm text-stone-500';
+            statusEl.textContent = '⏳ 验证中...';
 
             if (!url || !key) {
-                alert('请输入完整的 Supabase URL 和 Key');
+                statusEl.className = 'text-sm text-red-400';
+                statusEl.textContent = '❌ 请输入完整配置';
+                alert('❌ 请输入完整的 Supabase URL 和 Key');
+                return;
+            }
+
+            // 验证 URL 格式
+            if (!url.includes('.supabase.co')) {
+                statusEl.className = 'text-sm text-red-400';
+                statusEl.textContent = '❌ URL 格式错误';
+                alert('❌ Supabase URL 格式错误\n\n应该类似: https://xxxxx.supabase.co');
+                return;
+            }
+
+            // 验证 Key 格式（JWT token 格式）
+            if (!key.startsWith('eyJ')) {
+                statusEl.className = 'text-sm text-red-400';
+                statusEl.textContent = '❌ Key 格式错误';
+                alert('❌ Supabase Key 格式错误\n\n应该以 eyJ 开头');
                 return;
             }
 
             localStorage.setItem('supabase_url', url);
             localStorage.setItem('supabase_key', key);
 
-            initSupabase(url, key);
-            alert('✅ Supabase 配置已保存');
+            // 初始化并测试连接
+            await initSupabase(url, key);
         }
 
-        function initSupabase(url, key) {
+        async function initSupabase(url, key) {
+            const statusEl = document.getElementById('connection-status');
+
             try {
                 supabase = window.supabase.createClient(url, key);
-                document.getElementById('connection-status').textContent = '✅ 已连接';
-                document.getElementById('connection-status').classList.add('text-emerald-400');
+
+                // 立即测试连接
+                statusEl.className = 'text-sm text-blue-400';
+                statusEl.textContent = '🔄 测试连接中...';
+
+                const { data, error } = await supabase
+                    .from('models')
+                    .select('count', { count: 'exact', head: true });
+
+                if (error) throw error;
+
+                // 连接成功
+                statusEl.className = 'text-sm text-emerald-400 font-semibold';
+                statusEl.textContent = '✅ 已连接并验证';
 
                 // 启用按钮
                 document.getElementById('btn-sync').disabled = false;
                 document.getElementById('btn-batch-test').disabled = false;
 
                 // 自动加载模型列表
-                refreshModels();
+                await refreshModels();
+
+                // 显示成功消息
+                showToast('✅ Supabase 连接成功！已加载模型列表', 'success');
             } catch (error) {
-                console.error('Supabase 初始化失败:', error);
-                document.getElementById('connection-status').textContent = '❌ 连接失败';
-                document.getElementById('connection-status').classList.add('text-red-400');
+                console.error('Supabase 连接失败:', error);
+                statusEl.className = 'text-sm text-red-400 font-semibold';
+                statusEl.textContent = '❌ 连接失败';
+
+                // 禁用按钮
+                document.getElementById('btn-sync').disabled = true;
+                document.getElementById('btn-batch-test').disabled = true;
+
+                // 显示详细错误
+                let errorMsg = '❌ Supabase 连接失败\n\n';
+                if (error.message.includes('Failed to fetch')) {
+                    errorMsg += '原因: 无法连接到 Supabase 服务器\n';
+                    errorMsg += '可能原因:\n';
+                    errorMsg += '1. URL 输入错误\n';
+                    errorMsg += '2. 网络连接问题\n';
+                    errorMsg += '3. Supabase 项目未启动\n\n';
+                    errorMsg += '请检查 URL 是否正确';
+                } else if (error.message.includes('JWT')) {
+                    errorMsg += '原因: API Key 无效\n';
+                    errorMsg += '可能原因:\n';
+                    errorMsg += '1. Key 输入错误或不完整\n';
+                    errorMsg += '2. Key 已过期或被撤销\n\n';
+                    errorMsg += '请在 Supabase Dashboard -> Settings -> API 中重新获取 Anon Key';
+                } else {
+                    errorMsg += '错误详情: ' + error.message;
+                }
+
+                alert(errorMsg);
             }
         }
 
@@ -307,21 +372,74 @@
         function saveOpenRouterKey() {
             const key = document.getElementById('openrouter-key').value.trim();
             if (!key) {
-                alert('请输入 OpenRouter API Key');
+                showToast('❌ 请输入 OpenRouter API Key', 'error');
                 return;
             }
+
+            // 验证格式（应该以 sk-or-v1- 开头）
+            if (!key.startsWith('sk-or-v1-')) {
+                showToast('⚠️ API Key 格式可能不正确\n应该以 sk-or-v1- 开头', 'warning');
+            }
+
             localStorage.setItem('openrouter_api_key', key);
-            alert('✅ OpenRouter API Key 已保存');
+            showToast('✅ OpenRouter API Key 已保存', 'success');
+        }
+
+        // ==================== Toast 通知 ====================
+        function showToast(message, type = 'info') {
+            // 移除旧的 toast
+            const oldToast = document.getElementById('toast');
+            if (oldToast) oldToast.remove();
+
+            // 创建新 toast
+            const toast = document.createElement('div');
+            toast.id = 'toast';
+            toast.className = 'fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl backdrop-blur-md border transition-all duration-300 transform translate-x-0 opacity-100';
+
+            // 根据类型设置样式
+            const styles = {
+                'success': 'bg-emerald-900/90 border-emerald-500 text-emerald-100',
+                'error': 'bg-red-900/90 border-red-500 text-red-100',
+                'warning': 'bg-amber-900/90 border-amber-500 text-amber-100',
+                'info': 'bg-blue-900/90 border-blue-500 text-blue-100'
+            };
+
+            toast.className += ' ' + (styles[type] || styles['info']);
+            toast.textContent = message;
+
+            document.body.appendChild(toast);
+
+            // 3秒后自动消失
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-8');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         // ==================== 模型列表管理 ====================
         async function refreshModels() {
             if (!supabase) {
-                alert('请先配置 Supabase 连接');
+                showToast('❌ 请先配置 Supabase 连接', 'error');
                 return;
             }
 
             try {
+                // 显示加载状态
+                const tbody = document.getElementById('models-table-body');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-8 text-blue-400">
+                            <div class="flex items-center justify-center gap-2">
+                                <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>加载中...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
                 const { data, error } = await supabase
                     .from('models')
                     .select('*')
@@ -333,10 +451,26 @@
                 renderModelsTable(allModels);
                 updateStats(allModels);
 
+                if (allModels.length > 0) {
+                    showToast(`✅ 成功加载 ${allModels.length} 个模型`, 'success');
+                } else {
+                    showToast('⚠️ 数据库中暂无模型，请先同步 OpenRouter', 'warning');
+                }
+
                 console.log('✅ 成功加载', allModels.length, '个模型');
             } catch (error) {
                 console.error('加载模型失败:', error);
-                alert('❌ 加载模型失败: ' + error.message);
+                showToast('❌ 加载模型失败: ' + error.message, 'error');
+
+                // 显示错误状态
+                const tbody = document.getElementById('models-table-body');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-8 text-red-400">
+                            ❌ 加载失败: ${error.message}
+                        </td>
+                    </tr>
+                `;
             }
         }
 
