@@ -44,6 +44,14 @@
     <!-- 主容器 -->
     <div class="max-w-7xl mx-auto px-6 py-8">
 
+        <!-- 调试测试按钮 -->
+        <div class="bg-blue-900/20 border border-blue-500 rounded-lg p-3 mb-4">
+            <button onclick="window.testClick()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                🧪 测试 JavaScript
+            </button>
+            <span class="text-sm text-blue-300 ml-3">点击这个按钮测试 JavaScript 是否工作</span>
+        </div>
+
         <!-- Supabase 配置卡片 -->
         <div class="bg-stone-900/50 backdrop-blur-sm rounded-2xl p-6 border border-stone-800 mb-6">
             <div class="flex items-center justify-between mb-4">
@@ -223,14 +231,45 @@
     </div>
 
     <script>
+        // ==================== 全局错误处理 ====================
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('🚨 全局错误捕获:', {
+                message: message,
+                source: source,
+                line: lineno,
+                column: colno,
+                error: error
+            });
+            alert('❌ JavaScript 错误:\n\n' + message + '\n\n行号: ' + lineno);
+            return false;
+        };
+
+        // 捕获未处理的 Promise 错误
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('🚨 未处理的 Promise 错误:', event.reason);
+            alert('❌ Promise 错误:\n\n' + event.reason);
+        });
+
         // ==================== 全局变量 ====================
         let supabase = null;
         let allModels = [];
 
         // ==================== 初始化 ====================
         window.onload = function() {
+            console.log('🚀 页面加载完成');
+            console.log('📍 当前 URL:', window.location.href);
+            console.log('🔧 Supabase 客户端是否存在:', typeof window.supabase !== 'undefined');
+
             loadSupabaseConfig();
             loadOpenRouterKey();
+
+            console.log('✅ 初始化完成');
+        };
+
+        // 测试函数是否可访问
+        window.testClick = function() {
+            console.log('🔔 测试按钮点击成功！');
+            alert('✅ JavaScript 正常工作！');
         };
 
         // ==================== Supabase 配置管理 ====================

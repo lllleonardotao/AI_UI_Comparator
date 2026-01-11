@@ -137,6 +137,10 @@ const server = http.createServer(async (req, res) => {
   const ext = path.extname(filePath).toLowerCase();
   const contentType = mimeTypes[ext] || 'application/octet-stream';
 
+  console.log(`📂 尝试读取文件: ${filePath}`);
+  console.log(`📁 __dirname: ${__dirname}`);
+  console.log(`📄 pathname: ${pathname}`);
+
   fs.readFile(filePath, (error, content) => {
     if (error) {
       if (error.code === 'ENOENT') {
