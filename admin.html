@@ -44,6 +44,42 @@
     <!-- 主容器 -->
     <div class="max-w-7xl mx-auto px-6 py-8">
 
+        <!-- 快速开始指引 -->
+        <div id="quick-start-guide" class="bg-gradient-to-r from-amber-500/20 to-blue-500/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-amber-500/50 mb-6">
+            <div class="flex items-start gap-4">
+                <div class="text-4xl">🚀</div>
+                <div class="flex-1">
+                    <h2 class="text-xl font-bold text-amber-400 mb-3">快速开始指引</h2>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div id="step-1-icon" class="w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center text-xs">1</div>
+                            <div class="flex-1">
+                                <span class="text-stone-300">配置 Supabase 数据库连接</span>
+                                <span id="step-1-status" class="ml-2 text-xs text-stone-500">待完成</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div id="step-2-icon" class="w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center text-xs">2</div>
+                            <div class="flex-1">
+                                <span class="text-stone-300">配置 OpenRouter API Key</span>
+                                <span id="step-2-status" class="ml-2 text-xs text-stone-500">待完成</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div id="step-3-icon" class="w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center text-xs">3</div>
+                            <div class="flex-1">
+                                <span class="text-stone-300">同步 OpenRouter 模型列表</span>
+                                <span id="step-3-status" class="ml-2 text-xs text-stone-500">待完成</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('quick-start-guide').style.display='none'" class="mt-4 text-xs text-stone-400 hover:text-stone-300 underline">
+                        我知道了，隐藏此提示
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Supabase 配置卡片 -->
         <div class="bg-stone-900/50 backdrop-blur-sm rounded-2xl p-6 border border-stone-800 mb-6">
             <div class="flex items-center justify-between mb-4">
@@ -132,29 +168,53 @@
 
         <!-- 操作按钮区 -->
         <div class="bg-stone-900/50 backdrop-blur-sm rounded-2xl p-6 border border-stone-800 mb-6">
-            <div class="flex flex-wrap gap-3">
-                <button
-                    onclick="syncFromOpenRouter()"
-                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    id="btn-sync"
-                    disabled
-                >
-                    🔄 同步 OpenRouter 模型
-                </button>
-                <button
-                    onclick="batchTest()"
-                    class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    id="btn-batch-test"
-                    disabled
-                >
-                    ▶️ 批量测试
-                </button>
+            <h3 class="text-sm font-semibold text-stone-400 mb-3">操作面板</h3>
+            <div class="flex flex-wrap gap-3 mb-4">
+                <div class="relative group">
+                    <button
+                        onclick="syncFromOpenRouter()"
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        id="btn-sync"
+                        disabled
+                    >
+                        🔄 同步 OpenRouter 模型
+                    </button>
+                    <div id="btn-sync-tooltip" class="hidden group-hover:block absolute bottom-full left-0 mb-2 px-3 py-2 bg-stone-800 text-xs text-stone-300 rounded-lg shadow-lg whitespace-nowrap z-10">
+                        ⚠️ 请先配置 Supabase 连接
+                    </div>
+                </div>
+                <div class="relative group">
+                    <button
+                        onclick="batchTest()"
+                        class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        id="btn-batch-test"
+                        disabled
+                    >
+                        ▶️ 批量测试 (Phase 5)
+                    </button>
+                    <div id="btn-batch-tooltip" class="hidden group-hover:block absolute bottom-full left-0 mb-2 px-3 py-2 bg-stone-800 text-xs text-stone-300 rounded-lg shadow-lg whitespace-nowrap z-10">
+                        ⚠️ 请先配置 Supabase 连接
+                    </div>
+                </div>
                 <button
                     onclick="refreshModels()"
                     class="px-6 py-2 bg-stone-700 hover:bg-stone-600 text-stone-200 rounded-lg transition-colors"
                 >
                     🔄 刷新列表
                 </button>
+            </div>
+
+            <!-- 实时日志 -->
+            <div id="operation-log" class="hidden">
+                <div class="bg-stone-950/50 rounded-lg p-4 border border-stone-800">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-sm font-semibold text-amber-400">📝 操作日志</h4>
+                        <button onclick="clearLog()" class="text-xs text-stone-500 hover:text-stone-300">清空</button>
+                    </div>
+                    <div id="log-content" class="text-xs text-stone-400 space-y-1 max-h-40 overflow-y-auto font-mono">
+                        <!-- 日志内容将动态插入 -->
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -231,7 +291,69 @@
         window.onload = function() {
             loadSupabaseConfig();
             loadOpenRouterKey();
+            updateStepStatus();
         };
+
+        // ==================== 日志系统 ====================
+        function addLog(message, type = 'info') {
+            const logContent = document.getElementById('log-content');
+            const logContainer = document.getElementById('operation-log');
+
+            // 显示日志容器
+            logContainer.classList.remove('hidden');
+
+            const time = new Date().toLocaleTimeString('zh-CN');
+            const colors = {
+                'info': 'text-blue-400',
+                'success': 'text-emerald-400',
+                'error': 'text-red-400',
+                'warning': 'text-amber-400'
+            };
+
+            const logEntry = document.createElement('div');
+            logEntry.className = colors[type] || 'text-stone-400';
+            logEntry.textContent = `[${time}] ${message}`;
+
+            logContent.appendChild(logEntry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log-content').innerHTML = '';
+            document.getElementById('operation-log').classList.add('hidden');
+        }
+
+        // ==================== 步骤状态更新 ====================
+        function updateStepStatus() {
+            // 检查步骤1: Supabase 连接
+            const step1Complete = supabase !== null;
+            updateStep(1, step1Complete);
+
+            // 检查步骤2: OpenRouter API Key
+            const step2Complete = localStorage.getItem('openrouter_api_key') !== null;
+            updateStep(2, step2Complete);
+
+            // 检查步骤3: 模型已同步
+            const step3Complete = allModels.length > 0;
+            updateStep(3, step3Complete);
+        }
+
+        function updateStep(stepNum, isComplete) {
+            const icon = document.getElementById(`step-${stepNum}-icon`);
+            const status = document.getElementById(`step-${stepNum}-status`);
+
+            if (isComplete) {
+                icon.className = 'w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-xs text-white';
+                icon.textContent = '✓';
+                status.textContent = '✅ 已完成';
+                status.className = 'ml-2 text-xs text-emerald-400';
+            } else {
+                icon.className = 'w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center text-xs';
+                icon.textContent = stepNum;
+                status.textContent = '待完成';
+                status.className = 'ml-2 text-xs text-stone-500';
+            }
+        }
 
         // ==================== Supabase 配置管理 ====================
         function loadSupabaseConfig() {
@@ -291,44 +413,51 @@
             const statusEl = document.getElementById('connection-status');
 
             try {
-                console.log('🔌 创建 Supabase 客户端...');
+                addLog('🔌 正在创建 Supabase 客户端...', 'info');
                 supabase = window.supabase.createClient(url, key);
 
                 // 立即测试连接
                 statusEl.className = 'text-sm text-blue-400 font-medium px-3 py-1 bg-blue-900/30 rounded-lg animate-pulse';
                 statusEl.textContent = '🔄 测试连接中...';
 
-                console.log('📡 测试数据库连接...');
+                addLog('📡 正在测试数据库连接...', 'info');
                 const { data, error } = await supabase
                     .from('models')
                     .select('count', { count: 'exact', head: true });
 
                 if (error) throw error;
 
-                console.log('✅ 连接成功！');
+                addLog('✅ Supabase 连接成功！', 'success');
 
                 // 连接成功
                 statusEl.className = 'text-sm text-emerald-400 font-semibold px-3 py-1 bg-emerald-900/30 rounded-lg';
                 statusEl.textContent = '✅ 已连接并验证';
 
-                // 启用按钮
+                // 启用按钮并更新提示
                 document.getElementById('btn-sync').disabled = false;
                 document.getElementById('btn-batch-test').disabled = false;
+                document.getElementById('btn-sync-tooltip').textContent = '✅ 点击同步 OpenRouter 模型列表';
+                document.getElementById('btn-batch-tooltip').textContent = '🚧 Phase 5 功能开发中';
+
+                // 更新步骤1状态
+                updateStep(1, true);
 
                 // 自动加载模型列表
-                console.log('📋 开始加载模型列表...');
+                addLog('📋 正在加载模型列表...', 'info');
                 await refreshModels();
 
-                // 显示成功消息 - 使用 alert 确保用户看到
-                alert('✅ Supabase 连接成功！\n\n已加载模型列表');
+                addLog('✅ 模型列表加载完成', 'success');
             } catch (error) {
-                console.error('❌ Supabase 连接失败:', error);
+                addLog('❌ Supabase 连接失败: ' + error.message, 'error');
                 statusEl.className = 'text-sm text-red-400 font-semibold px-3 py-1 bg-red-900/30 rounded-lg';
                 statusEl.textContent = '❌ 连接失败';
 
                 // 禁用按钮
                 document.getElementById('btn-sync').disabled = true;
                 document.getElementById('btn-batch-test').disabled = true;
+
+                // 更新步骤1状态
+                updateStep(1, false);
 
                 // 显示详细错误
                 let errorMsg = '❌ Supabase 连接失败\n\n';
@@ -382,17 +511,22 @@
         function saveOpenRouterKey() {
             const key = document.getElementById('openrouter-key').value.trim();
             if (!key) {
-                showToast('❌ 请输入 OpenRouter API Key', 'error');
+                alert('❌ 请输入 OpenRouter API Key');
                 return;
             }
 
             // 验证格式（应该以 sk-or-v1- 开头）
             if (!key.startsWith('sk-or-v1-')) {
-                showToast('⚠️ API Key 格式可能不正确\n应该以 sk-or-v1- 开头', 'warning');
+                alert('⚠️ API Key 格式可能不正确\n应该以 sk-or-v1- 开头');
             }
 
             localStorage.setItem('openrouter_api_key', key);
-            showToast('✅ OpenRouter API Key 已保存', 'success');
+            addLog('✅ OpenRouter API Key 已保存', 'success');
+
+            // 更新步骤2状态
+            updateStep(2, true);
+
+            alert('✅ OpenRouter API Key 已保存\n\n现在可以点击"同步 OpenRouter 模型"按钮了');
         }
 
         // ==================== Toast 通知 ====================
@@ -461,11 +595,16 @@
                 renderModelsTable(allModels);
                 updateStats(allModels);
 
+                // 更新步骤3状态（如果有模型数据）
                 if (allModels.length > 0) {
-                    showToast(`✅ 成功加载 ${allModels.length} 个模型`, 'success');
+                    updateStep(3, true);
+                    // showToast 已在上面被移除，不需要再显示
                 } else {
-                    showToast('⚠️ 数据库中暂无模型，请先同步 OpenRouter', 'warning');
+                    updateStep(3, false);
                 }
+
+                // 更新全局步骤状态
+                updateStepStatus();
 
                 console.log('✅ 成功加载', allModels.length, '个模型');
             } catch (error) {
@@ -591,12 +730,14 @@
         async function syncFromOpenRouter() {
             if (!supabase) {
                 alert('❌ 请先配置 Supabase 连接');
+                addLog('❌ 同步失败：未连接到 Supabase', 'error');
                 return;
             }
 
             const apiKey = localStorage.getItem('openrouter_api_key');
             if (!apiKey) {
                 alert('❌ 请先配置 OpenRouter API Key');
+                addLog('❌ 同步失败：未配置 API Key', 'error');
                 return;
             }
 
@@ -608,9 +749,10 @@
                 btn.disabled = true;
                 btn.innerHTML = '<svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 同步中...';
 
-                console.log('🔄 开始从 OpenRouter 获取模型列表...');
+                addLog('🔄 开始从 OpenRouter 获取模型列表...', 'info');
 
                 // 1. 获取 OpenRouter 模型列表
+                addLog('📡 正在连接 OpenRouter API...', 'info');
                 const response = await fetch('https://openrouter.ai/api/v1/models', {
                     method: 'GET',
                     headers: {
@@ -627,20 +769,30 @@
                 const result = await response.json();
                 const models = result.data || [];
 
-                console.log(`✅ 获取到 ${models.length} 个模型`);
+                addLog(`✅ 成功获取到 ${models.length} 个模型`, 'success');
 
                 if (models.length === 0) {
+                    addLog('⚠️ OpenRouter 未返回任何模型', 'warning');
                     alert('⚠️ OpenRouter 未返回任何模型');
                     return;
                 }
 
                 // 2. 处理并导入模型
+                addLog(`💾 开始导入模型到数据库 (总计 ${models.length} 个)...`, 'info');
+                btn.innerHTML = `<svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 导入中... 0/${models.length}`;
+
                 let imported = 0;
                 let updated = 0;
                 let skipped = 0;
 
-                for (const model of models) {
+                for (let i = 0; i < models.length; i++) {
+                    const model = models[i];
                     try {
+                        // 每100个更新一次进度
+                        if (i % 100 === 0 || i === models.length - 1) {
+                            btn.innerHTML = `<svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 导入中... ${i+1}/${models.length}`;
+                        }
+
                         // 检测模型类型
                         const detectedType = detectModelType(model);
 
@@ -671,7 +823,6 @@
                             .select();
 
                         if (error) {
-                            console.warn(`⚠️ 导入失败: ${model.id}`, error);
                             skipped++;
                         } else {
                             if (data && data.length > 0) {
@@ -685,21 +836,25 @@
                             }
                         }
                     } catch (err) {
-                        console.error(`❌ 处理模型失败: ${model.id}`, err);
                         skipped++;
                     }
                 }
 
-                console.log(`✅ 同步完成: 新增 ${imported}, 更新 ${updated}, 跳过 ${skipped}`);
+                addLog(`✅ 同步完成: 新增 ${imported}, 更新 ${updated}, 跳过 ${skipped}`, 'success');
 
                 // 3. 刷新模型列表
+                addLog('🔄 正在刷新模型列表...', 'info');
                 await refreshModels();
 
+                // 更新步骤3状态
+                updateStep(3, true);
+
                 // 4. 显示结果
+                addLog(`✨ 全部完成！总计处理 ${models.length} 个模型`, 'success');
                 alert(`✅ OpenRouter 同步完成！\n\n新增: ${imported} 个模型\n更新: ${updated} 个模型\n跳过: ${skipped} 个模型\n总计: ${models.length} 个模型`);
 
             } catch (error) {
-                console.error('❌ 同步失败:', error);
+                addLog('❌ 同步失败: ' + error.message, 'error');
 
                 let errorMsg = '❌ OpenRouter 同步失败\n\n';
                 if (error.message.includes('401')) {
