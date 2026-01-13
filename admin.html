@@ -251,7 +251,7 @@
         });
 
         // ==================== 全局变量 ====================
-        let supabase = null;
+        let supabaseClient = null;
         let allModels = [];
 
         // ==================== 初始化 ====================
@@ -331,14 +331,14 @@
 
             try {
                 console.log('🔌 创建 Supabase 客户端...');
-                supabase = window.supabase.createClient(url, key);
+                supabaseClient = window.supabase.createClient(url, key);
 
                 // 立即测试连接
                 statusEl.className = 'text-sm text-blue-400 font-medium px-3 py-1 bg-blue-900/30 rounded-lg animate-pulse';
                 statusEl.textContent = '🔄 测试连接中...';
 
                 console.log('📡 测试数据库连接...');
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('models')
                     .select('count', { count: 'exact', head: true });
 
@@ -393,13 +393,13 @@
         }
 
         async function testConnection() {
-            if (!supabase) {
+            if (!supabaseClient) {
                 alert('请先保存配置');
                 return;
             }
 
             try {
-                const { data, error } = await supabase.from('models').select('count', { count: 'exact', head: true });
+                const { data, error } = await supabaseClient.from('models').select('count', { count: 'exact', head: true });
 
                 if (error) throw error;
 
@@ -467,7 +467,7 @@
 
         // ==================== 模型列表管理 ====================
         async function refreshModels() {
-            if (!supabase) {
+            if (!supabaseClient) {
                 showToast('❌ 请先配置 Supabase 连接', 'error');
                 return;
             }
@@ -489,7 +489,7 @@
                     </tr>
                 `;
 
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('models')
                     .select('*')
                     .order('provider', { ascending: true });
@@ -628,7 +628,7 @@
 
         // ==================== OpenRouter 同步功能 ====================
         async function syncFromOpenRouter() {
-            if (!supabase) {
+            if (!supabaseClient) {
                 alert('❌ 请先配置 Supabase 连接');
                 return;
             }
@@ -701,7 +701,7 @@
                         };
 
                         // 尝试插入或更新
-                        const { data, error } = await supabase
+                        const { data, error } = await supabaseClient
                             .from('models')
                             .upsert(modelData, {
                                 onConflict: 'model_id',

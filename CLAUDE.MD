@@ -82,6 +82,14 @@
 
 2. **GPT-5 Provider错误：** 可能与余额/权限有关
 
+### 开发踩坑记录
+
+1. **Supabase CDN 变量冲突（2025-01）**
+   - **问题：** `@supabase/supabase-js` CDN 在全局作用域声明了 `supabase` 变量，代码中再用 `let supabase = null;` 会冲突
+   - **症状：** 控制台报 `Identifier 'supabase' has already been declared`，后续 JS 全部不执行
+   - **解决：** 本地变量改名为 `supabaseClient`，避免与 CDN 全局变量重名
+   - **教训：** 使用第三方 CDN 时，查阅其全局变量命名，避免使用相同变量名；ES6 的 `let`/`const` 不允许同作用域重复声明
+
 ### 重要约束
 - ⚠️ **API密钥不在文件中** - 用户必须通过UI配置
 - ⚠️ **单文件架构** - 所有UI代码在一个HTML文件中
@@ -313,6 +321,6 @@ curl -X POST https://openrouter.ai/api/v1/chat/completions \
 
 ---
 
-**最后更新：** 2024-12-11
+**最后更新：** 2025-01-13
 **状态：** Phase 0 - 图片渲染问题调查中
 **下一步优先：** 修复图片显示 或 实现降级方案
