@@ -792,13 +792,393 @@
             return parts[0] || 'unknown';
         }
 
-        // ==================== 占位函数（Phase 4-5 实现）====================
-        function batchTest() {
-            alert('🚧 此功能将在 Phase 5 实现');
+        // ==================== Phase 4: 单模型测试功能 ====================
+
+        /**
+         * 测试验证维度（共4项，每项1分）：
+         * 1. API 可达性 - 请求成功返回
+         * 2. 响应格式 - JSON 结构正确
+         * 3. 内容有效 - 有实际输出内容
+         * 4. 响应时间 - < 30秒
+         */
+
+        // 根据模型类型获取测试 prompt
+        function getTestPrompt(modelType) {
+            const prompts = {
+                'text': {
+                    messages: [
+                        { role: 'user', content: 'Say "Hello, test successful!" in exactly 5 words.' }
+                    ]
+                },
+                'code': {
+                    messages: [
+                        { role: 'user', content: 'Write a JavaScript function that returns "test passed". Only output the code, no explanation.' }
+                    ]
+                },
+                'image': {
+                    messages: [
+                        { role: 'user', content: 'Generate a simple 100x100 pixel solid blue square image.' }
+                    ],
+                    // 图片生成模型需要特殊参数
+                    modalities: ['image']
+                }
+            };
+            return prompts[modelType] || prompts['text'];
         }
 
-        function testModel(modelId) {
-            alert('🚧 单模型测试功能将在 Phase 4 实现\n模型: ' + modelId);
+        // 验证响应格式是否正确
+        function validateResponseFormat(response, modelType) {
+            try {
+                // 检查基本结构
+                if (!response || !response.choices || !Array.isArray(response.choices)) {
+                    return { valid: false, reason: '缺少 choices 数组' };
+                }
+
+                if (response.choices.length === 0) {
+                    return { valid: false, reason: 'choices 为空' };
+                }
+
+                const choice = response.choices[0];
+
+                // 检查 message 结构
+                if (!choice.message) {
+                    return { valid: false, reason: '缺少 message 对象' };
+                }
+
+                // 对于图片模型，检查是否有图片内容
+                if (modelType === 'image') {
+                    const content = choice.message.content;
+                    // 图片可能在 content 数组中或 base64 字段
+                    if (Array.isArray(content)) {
+                        const hasImage = content.some(c => c.type === 'image_url' || c.type === 'image');
+                        if (!hasImage) {
+                            return { valid: false, reason: '图片模型未返回图片' };
+                        }
+                    }
+                }
+
+                return { valid: true };
+            } catch (e) {
+                return { valid: false, reason: '解析错误: ' + e.message };
+            }
+        }
+
+        // 验证响应内容是否有效
+        function validateResponseContent(response, modelType) {
+            try {
+                const choice = response.choices[0];
+                const message = choice.message;
+
+                if (modelType === 'image') {
+                    // 图片模型：检查是否有 base64 或 URL
+                    const content = message.content;
+                    if (typeof content === 'string' && content.length > 100) {
+                        return { valid: true, content: '[图片数据]' };
+                    }
+                    if (Array.isArray(content)) {
+                        const img = content.find(c => c.type === 'image_url' || c.type === 'image');
+                        if (img) {
+                            return { valid: true, content: '[图片数据]' };
+                        }
+                    }
+                    return { valid: false, reason: '无有效图片数据' };
+                } else {
+                    // 文本/代码模型：检查内容长度
+                    const content = message.content;
+                    if (typeof content === 'string' && content.trim().length > 0) {
+                        return { valid: true, content: content.substring(0, 100) };
+                    }
+                    return { valid: false, reason: '内容为空' };
+                }
+            } catch (e) {
+                return { valid: false, reason: '内容验证错误: ' + e.message };
+            }
+        }
+
+        // 主测试函数
+        async function testModel(modelId) {
+            console.log('🧪 开始测试模型:', modelId);
+
+            // 检查前置条件
+            if (!supabaseClient) {
+                alert('❌ 请先配置 Supabase 连接');
+                return;
+            }
+
+            const apiKey = localStorage.getItem('openrouter_api_key');
+            if (!apiKey) {
+                alert('❌ 请先配置 OpenRouter API Key');
+                return;
+            }
+
+            // 查找模型信息
+            const model = allModels.find(m => m.model_id === modelId);
+            if (!model) {
+                alert('❌ 模型不存在: ' + modelId);
+                return;
+            }
+
+            // 显示测试进度模态框
+            showTestModal(model);
+
+            // 初始化测试结果
+            const testResult = {
+                api_reachable: false,
+                format_valid: false,
+                content_valid: false,
+                response_fast: false,
+                error_message: null,
+                response_time: null,
+                actual_cost: null,
+                test_response: null
+            };
+
+            const startTime = Date.now();
+
+            try {
+                // 准备请求
+                const testPrompt = getTestPrompt(model.detected_type);
+                const requestBody = {
+                    model: modelId,
+                    messages: testPrompt.messages,
+                    max_tokens: 500
+                };
+
+                // 图片模型添加 modalities 参数
+                if (model.detected_type === 'image' && testPrompt.modalities) {
+                    requestBody.modalities = testPrompt.modalities;
+                }
+
+                updateTestModal('status', '📡 发送请求中...');
+
+                // 发送请求
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'AI UI Comparator - Model Test'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const responseTime = Date.now() - startTime;
+                testResult.response_time = responseTime;
+
+                updateTestModal('time', `⏱️ 响应时间: ${responseTime}ms`);
+
+                // 检查 HTTP 状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                // ✅ 维度1: API 可达
+                testResult.api_reachable = true;
+                updateTestModal('check1', '✅ API 可达');
+
+                // 解析响应
+                const data = await response.json();
+                testResult.test_response = JSON.stringify(data).substring(0, 1000);
+
+                // ✅ 维度2: 响应格式
+                const formatCheck = validateResponseFormat(data, model.detected_type);
+                testResult.format_valid = formatCheck.valid;
+                updateTestModal('check2', formatCheck.valid ? '✅ 格式正确' : '❌ ' + formatCheck.reason);
+
+                // ✅ 维度3: 内容有效
+                if (formatCheck.valid) {
+                    const contentCheck = validateResponseContent(data, model.detected_type);
+                    testResult.content_valid = contentCheck.valid;
+                    updateTestModal('check3', contentCheck.valid ? '✅ 内容有效' : '❌ ' + contentCheck.reason);
+
+                    if (contentCheck.valid && contentCheck.content) {
+                        updateTestModal('preview', '📄 ' + contentCheck.content);
+                    }
+                } else {
+                    updateTestModal('check3', '⏭️ 跳过（格式错误）');
+                }
+
+                // ✅ 维度4: 响应时间 < 30秒
+                testResult.response_fast = responseTime < 30000;
+                updateTestModal('check4', testResult.response_fast ? '✅ 速度合格' : '⚠️ 响应较慢');
+
+                // 提取实际成本（如果 API 返回）
+                if (data.usage) {
+                    const promptCost = (data.usage.prompt_tokens || 0) * 0.000001;
+                    const completionCost = (data.usage.completion_tokens || 0) * 0.000002;
+                    testResult.actual_cost = promptCost + completionCost;
+                }
+
+            } catch (error) {
+                console.error('❌ 测试失败:', error);
+                testResult.error_message = error.message;
+                testResult.response_time = Date.now() - startTime;
+
+                updateTestModal('status', '❌ 测试失败');
+                updateTestModal('error', '错误: ' + error.message);
+
+                // 分析错误类型
+                if (error.message.includes('Failed to fetch')) {
+                    updateTestModal('check1', '❌ 网络错误');
+                } else if (error.message.includes('401')) {
+                    updateTestModal('check1', '❌ API Key 无效');
+                } else if (error.message.includes('402')) {
+                    updateTestModal('check1', '❌ 余额不足');
+                } else if (error.message.includes('404')) {
+                    updateTestModal('check1', '❌ 模型不存在');
+                } else if (error.message.includes('429')) {
+                    updateTestModal('check1', '❌ 请求过于频繁');
+                } else {
+                    updateTestModal('check1', '❌ 请求失败');
+                }
+            }
+
+            // 计算总分
+            const score = [
+                testResult.api_reachable,
+                testResult.format_valid,
+                testResult.content_valid,
+                testResult.response_fast
+            ].filter(Boolean).length;
+
+            // 确定验证状态
+            let status;
+            if (score === 4) {
+                status = 'verified';
+            } else if (score >= 2) {
+                status = 'partial';
+            } else if (score > 0) {
+                status = 'failed';
+            } else {
+                status = 'failed';
+            }
+
+            updateTestModal('score', `📊 得分: ${score}/4 (${status === 'verified' ? '已验证' : status === 'partial' ? '部分通过' : '失败'})`);
+
+            // 写入 Supabase
+            await saveTestResult(modelId, testResult, score, status);
+
+            // 刷新模型列表
+            await refreshModels();
+
+            updateTestModal('status', '✅ 测试完成');
+        }
+
+        // 保存测试结果到 Supabase
+        async function saveTestResult(modelId, testResult, score, status) {
+            try {
+                updateTestModal('save', '💾 保存结果中...');
+
+                // 基础更新数据（使用已知存在的字段）
+                const updateData = {
+                    verification_status: status,
+                    verification_score: score
+                };
+
+                // 可选字段：如果有值则添加
+                if (testResult.actual_cost !== null) {
+                    updateData.actual_cost = testResult.actual_cost;
+                }
+                if (testResult.response_time !== null) {
+                    updateData.response_time = testResult.response_time;
+                }
+
+                const { error } = await supabaseClient
+                    .from('models')
+                    .update(updateData)
+                    .eq('model_id', modelId);
+
+                if (error) throw error;
+
+                updateTestModal('save', '✅ 结果已保存');
+                console.log('✅ 测试结果已保存到 Supabase:', { modelId, score, status });
+            } catch (error) {
+                console.error('❌ 保存失败:', error);
+                updateTestModal('save', '❌ 保存失败: ' + error.message);
+            }
+        }
+
+        // 显示测试模态框
+        function showTestModal(model) {
+            // 移除旧模态框
+            const oldModal = document.getElementById('test-modal');
+            if (oldModal) oldModal.remove();
+
+            const modal = document.createElement('div');
+            modal.id = 'test-modal';
+            modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-stone-900 border border-stone-700 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-amber-500">🧪 模型测试</h3>
+                        <button onclick="closeTestModal()" class="text-stone-400 hover:text-stone-200">✕</button>
+                    </div>
+
+                    <div class="mb-4 p-3 bg-stone-800/50 rounded-lg">
+                        <div class="text-sm text-stone-400">模型</div>
+                        <div class="font-mono text-stone-200 text-sm truncate">${model.model_id}</div>
+                        <div class="text-xs text-stone-500 mt-1">${model.name} · ${model.detected_type || '未知类型'}</div>
+                    </div>
+
+                    <div class="space-y-2 mb-4">
+                        <div id="modal-status" class="text-sm text-blue-400 animate-pulse">🔄 准备测试...</div>
+                        <div id="modal-time" class="text-xs text-stone-500"></div>
+                    </div>
+
+                    <div class="space-y-1 text-sm mb-4">
+                        <div id="modal-check1" class="text-stone-400">⏳ 检查 API 可达性...</div>
+                        <div id="modal-check2" class="text-stone-400">⏳ 检查响应格式...</div>
+                        <div id="modal-check3" class="text-stone-400">⏳ 检查内容有效性...</div>
+                        <div id="modal-check4" class="text-stone-400">⏳ 检查响应速度...</div>
+                    </div>
+
+                    <div id="modal-preview" class="text-xs text-stone-500 bg-stone-800/30 p-2 rounded mb-3 hidden max-h-20 overflow-auto"></div>
+                    <div id="modal-error" class="text-xs text-red-400 bg-red-900/20 p-2 rounded mb-3 hidden"></div>
+
+                    <div id="modal-score" class="text-sm font-semibold text-stone-300 mb-3"></div>
+                    <div id="modal-save" class="text-xs text-stone-500"></div>
+
+                    <button onclick="closeTestModal()" class="w-full mt-4 px-4 py-2 bg-stone-700 hover:bg-stone-600 text-stone-200 rounded-lg transition-colors">
+                        关闭
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+        }
+
+        // 更新模态框内容
+        function updateTestModal(field, content) {
+            const el = document.getElementById('modal-' + field);
+            if (el) {
+                el.textContent = content;
+                el.classList.remove('hidden');
+
+                // 根据内容调整样式
+                if (content.startsWith('✅')) {
+                    el.className = el.className.replace(/text-stone-\d+|text-blue-\d+|animate-pulse/g, '').trim();
+                    el.classList.add('text-emerald-400');
+                } else if (content.startsWith('❌')) {
+                    el.className = el.className.replace(/text-stone-\d+|text-blue-\d+|animate-pulse/g, '').trim();
+                    el.classList.add('text-red-400');
+                } else if (content.startsWith('⚠️')) {
+                    el.className = el.className.replace(/text-stone-\d+|text-blue-\d+|animate-pulse/g, '').trim();
+                    el.classList.add('text-amber-400');
+                }
+            }
+        }
+
+        // 关闭模态框
+        function closeTestModal() {
+            const modal = document.getElementById('test-modal');
+            if (modal) modal.remove();
+        }
+
+        // ==================== Phase 5: 批量测试（占位）====================
+        function batchTest() {
+            alert('🚧 批量测试功能将在 Phase 5 实现\n\n提示：您可以先用单个模型的「测试」按钮逐个验证');
         }
     </script>
 
