@@ -13,6 +13,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const puppeteer = require('puppeteer');
 
 // 从环境变量或 .env 文件读取 API Key
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
@@ -52,7 +53,7 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/openrouter' && req.method === 'POST') {
     if (!API_KEY) {
       res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-      res.end(JSON.stringify({ 
+      res.end(JSON.stringify({
         error: 'Server configuration error',
         message: 'OPENROUTER_API_KEY not found. Please create a .env file with OPENROUTER_API_KEY=your_key'
       }));
@@ -87,7 +88,7 @@ const server = http.createServer(async (req, res) => {
         });
 
         const data = await response.json();
-        
+
         // 调试：记录响应状态
         if (!response.ok) {
           console.error(`❌ OpenRouter API 错误 (${response.status}):`, JSON.stringify(data).substring(0, 500));
@@ -104,20 +105,20 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify(data));
       } catch (error) {
         console.error('Proxy error:', error);
-        res.writeHead(500, { 
+        res.writeHead(500, {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         });
-        res.end(JSON.stringify({ 
+        res.end(JSON.stringify({
           error: 'Proxy request failed',
-          message: error.message 
+          message: error.message
         }));
       }
     });
     return;
   }
 
-  // 处理 OPTIONS 预检请求
+  // 处理 OPTIONS 预检请求 - openrouter
   if (pathname === '/api/openrouter' && req.method === 'OPTIONS') {
     res.writeHead(200, {
       'Access-Control-Allow-Origin': '*',
@@ -125,6 +126,124 @@ const server = http.createServer(async (req, res) => {
       'Access-Control-Allow-Headers': 'Content-Type'
     });
     res.end();
+    return;
+  }
+
+  // 处理 OPTIONS 预检请求 - screenshot
+  if (pathname === '/api/screenshot' && req.method === 'OPTIONS') {
+    res.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
+    res.end();
+    return;
+  }
+
+  // Puppeteer 截图 API
+  if (pathname === '/api/screenshot' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+
+    req.on('end', async () => {
+      let browser = null;
+      try {
+        const { html, width = 375, scale = 2 } = JSON.parse(body);
+
+        if (!html) {
+          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: 'Missing html parameter' }));
+          return;
+        }
+
+        console.log(`📸 开始截图: width=${width}, scale=${scale}`);
+        const startTime = Date.now();
+
+        // 启动 Puppeteer
+        browser = await puppeteer.launch({
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        });
+
+        const page = await browser.newPage();
+
+        // 设置视口
+        await page.setViewport({
+          width: width,
+          height: 800, // 初始高度，后续会自动调整
+          deviceScaleFactor: scale
+        });
+
+        // 加载 HTML 内容
+        await page.setContent(html, {
+          waitUntil: ['networkidle0', 'domcontentloaded']
+        });
+
+        // 等待额外渲染时间（动画等）
+        await new Promise(r => setTimeout(r, 500));
+
+        // 获取实际内容高度
+        const bodyHeight = await page.evaluate(() => {
+          const body = document.body;
+          let maxBottom = 0;
+          const allElements = body.querySelectorAll('*');
+          allElements.forEach(el => {
+            const rect = el.getBoundingClientRect();
+            const bottom = rect.top + rect.height;
+            if (bottom > maxBottom && rect.height > 0) {
+              maxBottom = bottom;
+            }
+          });
+          return Math.max(maxBottom, body.scrollHeight);
+        });
+
+        const safeHeight = Math.min(Math.max(Math.ceil(bodyHeight) + 50, 200), 8000);
+
+        // 调整视口高度
+        await page.setViewport({
+          width: width,
+          height: safeHeight,
+          deviceScaleFactor: scale
+        });
+
+        // 等待重新渲染
+        await new Promise(r => setTimeout(r, 200));
+
+        // 截图
+        const screenshotBuffer = await page.screenshot({
+          type: 'png',
+          fullPage: true
+        });
+
+        await browser.close();
+        browser = null;
+
+        // 转换为 base64
+        const dataUrl = `data:image/png;base64,${screenshotBuffer.toString('base64')}`;
+
+        const elapsed = Date.now() - startTime;
+        console.log(`✅ 截图完成: ${safeHeight}px, 耗时 ${elapsed}ms`);
+
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        });
+        res.end(JSON.stringify({ success: true, dataUrl, height: safeHeight }));
+
+      } catch (error) {
+        console.error('❌ 截图失败:', error);
+        if (browser) {
+          await browser.close();
+        }
+        res.writeHead(500, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        });
+        res.end(JSON.stringify({ error: 'Screenshot failed', message: error.message }));
+      }
+    });
     return;
   }
 

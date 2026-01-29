@@ -4099,128 +4099,36 @@ Avoid: 3D elements, realistic photos, cartoon style`;
         }
 
         /**
-         * 复制长图到剪贴板（使用 html2canvas）
-         * 由于 modern-screenshot CDN 被 ORB 阻止，使用已加载的 html2canvas
+         * 复制长图到剪贴板（使用服务端 Puppeteer）
+         * 通过 /api/screenshot 端点进行像素级完美截图
          */
         async function copyLongImageToClipboard(codeContent, platform = 'mobile', modelName = '') {
             try {
-                showToast('🖼️ 正在生成长图...', 3000);
+                showToast('🖼️ 正在生成长图...', 5000);
                 const targetWidth = platform === 'mobile' ? 375 : 1920;
 
-                // 注入CSS覆盖，只修复viewport高度问题，保留所有视觉效果
-                const heightFixCSS = `
-                    <style id="screenshot-height-fix">
-                        /* 只修复viewport高度问题 */
-                        html, body {
-                            height: auto !important;
-                            min-height: auto !important;
-                            max-height: none !important;
-                            overflow: visible !important;
-                        }
-                        /* 修复100vh导致的高度问题 */
-                        [style*="100vh"] {
-                            min-height: auto !important;
-                            height: auto !important;
-                        }
-                        /* 暂停动画而不是删除（保留当前帧的视觉效果） */
-                        *, *::before, *::after {
-                            animation-play-state: paused !important;
-                        }
-                    </style>
-                `;
+                // 调用服务端 Puppeteer API
+                const response = await fetch('/api/screenshot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        html: codeContent,
+                        width: targetWidth,
+                        scale: 2
+                    })
+                });
 
-                // 将CSS注入到content中
-                let modifiedContent = codeContent;
-                if (modifiedContent.includes('</head>')) {
-                    modifiedContent = modifiedContent.replace('</head>', heightFixCSS + '</head>');
-                } else if (modifiedContent.includes('<body')) {
-                    modifiedContent = modifiedContent.replace('<body', heightFixCSS + '<body');
-                } else {
-                    modifiedContent = heightFixCSS + modifiedContent;
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '截图服务失败');
                 }
 
-                // 创建隐藏的 iframe 来渲染内容
-                const iframe = document.createElement('iframe');
-                iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:' + targetWidth + 'px;height:auto;border:none;';
-                iframe.srcdoc = modifiedContent;
-                document.body.appendChild(iframe);
-
-                // 等待 iframe 加载完成
-                await new Promise((resolve) => {
-                    iframe.onload = resolve;
-                    setTimeout(resolve, 3000); // 3秒超时
-                });
-
-                // 额外等待渲染完成（给足时间让动画停到某一帧）
-                await new Promise(r => setTimeout(r, 800));
-
-                // 获取 iframe 内容的实际高度
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                const body = iframeDoc.body;
-
-                // 计算实际内容高度：遍历所有子元素找到最底部的位置
-                let maxBottom = 0;
-                const allElements = body.querySelectorAll('*');
-                allElements.forEach(el => {
-                    const rect = el.getBoundingClientRect();
-                    const bottom = rect.top + rect.height;
-                    if (bottom > maxBottom && rect.height > 0) {
-                        maxBottom = bottom;
-                    }
-                });
-
-                // 如果遍历失败，使用 body 的 scrollHeight 作为备选
-                let contentHeight = maxBottom > 0 ? Math.ceil(maxBottom) : body.scrollHeight;
-
-                // 添加底部padding确保不截断
-                contentHeight = contentHeight + 50;
-
-                // 确保高度合理（最小200px，最大8000px）
-                const safeHeight = Math.min(Math.max(contentHeight, 200), 8000);
-
-                console.log('Screenshot height calculated:', { maxBottom, scrollHeight: body.scrollHeight, safeHeight });
-
-                // 调整 iframe 高度
-                iframe.style.height = safeHeight + 'px';
-                await new Promise(r => setTimeout(r, 200));
-
-                // 使用 html2canvas 捕获 (带超时)
-                if (typeof html2canvas === 'undefined') {
-                    throw new Error('html2canvas 库未加载');
-                }
-
-                // 创建超时Promise
-                const timeoutPromise = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('截图超时，请稍后重试')), 15000);
-                });
-
-                // html2canvas Promise
-                const canvasPromise = html2canvas(body, {
-                    scale: 1.5, // 降低scale加速处理（原为2）
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: null, // 使用内容自身的背景色
-                    logging: false,
-                    width: targetWidth,
-                    height: safeHeight,
-                    windowWidth: targetWidth,
-                    windowHeight: safeHeight,
-                    scrollX: 0,
-                    scrollY: 0,
-                    imageTimeout: 5000, // 图片加载超时5秒
-                    removeContainer: true // 清理临时容器
-                });
-
-                // 竞态Promise - 超时或完成任一先到
-                const canvas = await Promise.race([canvasPromise, timeoutPromise]);
-
-                // 清理 iframe
-                document.body.removeChild(iframe);
+                const { dataUrl, height } = await response.json();
+                console.log('Screenshot generated:', { height, width: targetWidth });
 
                 // 转换为 Blob 并复制到剪贴板
-                const dataUrl = canvas.toDataURL('image/png', 1.0);
-                const response = await fetch(dataUrl);
-                const blob = await response.blob();
+                const blobResponse = await fetch(dataUrl);
+                const blob = await blobResponse.blob();
                 await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
 
                 showToast('✅ 长图已复制到剪贴板', 2000);
@@ -5013,7 +4921,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             `;
 
             const iframeContainer = document.createElement('div');
-            iframeContainer.className = 'flex-1 bg-white rounded-xl overflow-hidden shadow-2xl';
+            iframeContainer.className = 'flex-1 bg-white rounded-xl overflow-auto shadow-2xl';
             iframeContainer.style.minHeight = '0';
 
             const iframe = document.createElement('iframe');
