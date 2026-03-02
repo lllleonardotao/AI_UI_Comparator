@@ -520,8 +520,8 @@
     </style>
 </head>
 
-<body class="p-4 md:p-8 font-sans antialiased">
-    <div class="max-w-7xl mx-auto relative">
+<body class="p-4 md:p-6 font-sans antialiased min-h-screen flex flex-col">
+    <div class="max-w-7xl mx-auto relative flex-1 flex flex-col w-full">
         <!-- Header -->
         <header class="glass rounded-2xl p-5 mb-8 border border-stone-800/50">
             <div class="flex items-center justify-between">
@@ -573,7 +573,7 @@
         </header>
 
         <!-- Main Content -->
-        <div class="grid md:grid-cols-12 gap-6">
+        <div class="grid md:grid-cols-12 gap-6 flex-1">
             <!-- Left: Input Panel -->
             <div class="md:col-span-4">
                 <div
@@ -594,7 +594,7 @@
                         <label
                             class="text-stone-400 text-xs font-medium mb-2 block uppercase tracking-wider">描述你想要的UI界面</label>
                         <div class="relative">
-                            <textarea id="promptInput" rows="4" maxlength="500"
+                            <textarea id="promptInput" rows="4" maxlength="1000"
                                 class="w-full p-4 pr-16 pb-16 rounded-xl input-field resize-none text-sm leading-relaxed"
                                 placeholder="例如：极简风格的移动APP登录页面，包含logo、邮箱输入、密码输入、登录按钮..."></textarea>
 
@@ -612,11 +612,22 @@
                                         </path>
                                     </svg>
                                 </button>
+                                <!-- 魔术棒优化按钮（与图片按钮并排）-->
+                                <button id="optimizePromptBtn" type="button" onclick="optimizePrompt()"
+                                    class="w-9 h-9 flex items-center justify-center bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-amber-500 rounded-lg transition border border-stone-700"
+                                    title="✨ AI 优化提示词">
+                                    <span id="optimizeBtnIcon">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                    </span>
+                                </button>
                             </div>
 
                             <!-- 字符计数（右下角） -->
                             <div class="absolute bottom-4 right-4 text-stone-600 text-xs font-mono">
-                                <span id="charCount">0</span><span class="text-stone-700">/500</span>
+                                <span id="charCount">0</span><span class="text-stone-700">/1000</span>
                             </div>
                         </div>
                     </div>
@@ -708,7 +719,7 @@
                 </div>
 
                 <!-- Results -->
-                <div id="resultsContainer" class="glass rounded-2xl p-6 flex flex-col min-h-[600px]">
+                <div id="resultsContainer" class="glass rounded-2xl p-6 flex flex-col min-h-[calc(100vh-12rem)]">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-stone-100 flex items-center gap-2">
                             <span class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
@@ -1012,151 +1023,75 @@
         }
 
         /**
-         * 模型配置
-         * 
-         * 注意：所有模型（包括未来添加的模型和自定义模型）都会自动包含平台信息
-         * - 平台信息（手机端/PC端）会自动添加到 API 请求中
-         * - 用户在界面选择平台后，所有模型都会收到相应的平台信息
-         * - 自定义模型通过设置界面添加时，也会自动支持平台信息
-         * 
-         * 添加新模型时，只需设置以下字段：
-         * - name: 显示名称
-         * - model: 模型ID（如 'provider/model-name'）
-         * - cost: 每次生成的成本（美元）
-         * - type: 'image' 表示直接生成图片，'text-to-image-desc' 表示先生成描述再生成图片
+         * 模型配置（精选 9 个，最后更新：2026-03）
+         *
+         * 字段说明：
+         * - name:    显示名称
+         * - model:   OpenRouter 模型 ID
+         * - cost:    每次生成的估算成本（美元）
+         * - type:    'image' 直出图片 | 'text-to-image-desc' 文字描述转图 | 'code' 生成 HTML/CSS
+         * - timeout: 超时毫秒（可选，默认 60s）
          */
         const MODEL_CONFIGS = {
-            'gemini': {
-                name: 'Gemini Image',
-                model: 'google/gemini-2.5-flash-image-preview',
-                cost: 0.04,
-                type: 'image'
-            },
+
+            // ────────── 🖼️ 图片直出类 ──────────
+
             'gemini-flash': {
                 name: 'Gemini 2.5 Flash Image',
                 model: 'google/gemini-2.5-flash-image',
-                cost: 0.05,
+                cost: 0.067,   // ~$0.067/张@1024px（输入$0.30/M + 输出$2.50/M）
+                type: 'image'
+            },
+            'gemini-3.1-flash': {
+                name: 'Gemini 3.1 Flash Image 🆕',
+                model: 'google/gemini-3.1-flash-image-preview',
+                cost: 0.045,   // ~$0.045/张（更快更省）
                 type: 'image'
             },
             'gemini-pro': {
                 name: 'Gemini 3 Pro Image',
                 model: 'google/gemini-3-pro-image-preview',
-                cost: 0.05,
+                cost: 0.134,   // ~$0.134/张@1024px（输入$2.00/M + 输出$120/M）
                 type: 'image'
             },
-            'gemini-3-pro': {
-                name: 'Gemini 3 Pro Preview',
-                model: 'google/gemini-3-pro-preview',
-                cost: 0.07,
-                type: 'text-to-image-desc' // 该模型返回文本描述，需要转换为图像
-            },
-            'flux': {
-                name: 'Flux Pro',
-                model: 'black-forest-labs/flux.2-pro',
-                cost: 0.06,
-                type: 'image'
-            },
-            'gpt5': {
-                name: 'GPT-5 Image',
-                model: 'openai/gpt-5-image',
-                cost: 0.05,
-                type: 'image'
-            },
-            'claude': {
-                name: 'Claude 3.5 (描述)',
-                model: 'anthropic/claude-3.5-sonnet',
-                cost: 0.06,
-                type: 'text-to-image-desc'
-            },
-            'claude-code': {
-                name: 'Claude 3.5 (代码)',
-                model: 'anthropic/claude-3.5-sonnet',
-                cost: 0.04,
-                type: 'code',
-                timeout: 100000 // 100s，Claude 3.5 偶尔较慢
-            },
-            'gpt4-code': {
-                name: 'GPT-4 Turbo (代码)',
-                model: 'openai/gpt-4-turbo',
-                cost: 0.02,
-                type: 'code',
-                timeout: 110000 // 110s，GPT-4 Turbo 生成完整页面需要时间
-            },
-            'deepseek-code': {
-                name: 'DeepSeek Coder (代码)',
-                model: 'deepseek/deepseek-chat', // 使用 deepseek-chat，deepseek-coder 可能不可用
-                cost: 0.01,
-                type: 'code',
-                timeout: 120000 // 120s，DeepSeek 响应较慢
-            },
-            'gpt4o-code': {
-                name: 'GPT-4o (代码)',
-                model: 'openai/gpt-4o',
-                cost: 0.01,
-                type: 'code',
-                timeout: 100000
-            },
-            'qwen-coder': {
-                name: 'Qwen 2.5 (代码)',
-                model: 'qwen/qwen-2.5-72b-instruct',
-                cost: 0.01,
-                type: 'code',
-                timeout: 110000
-            },
+
+            // ────────── 💻 代码生成类 ──────────
+
             'deepseek-v3': {
-                name: 'DeepSeek V3 (代码)',
+                name: 'DeepSeek V3.1 (代码)',
                 model: 'deepseek/deepseek-chat-v3.1',
-                cost: 0.01,
+                cost: 0.01,    // 输入$0.20/M + 输出$0.80/M
                 type: 'code',
                 timeout: 130000
             },
-            'claude-opus': {
-                name: 'Claude Opus 4.5 (代码)',
-                model: 'anthropic/claude-opus-4.5',
-                cost: 0.2,
+            'qwen-coder': {
+                name: 'Qwen3 Coder 🆕',
+                model: 'qwen/qwen3-coder',
+                cost: 0.01,    // 输入$0.22/M + 输出$1.00/M
                 type: 'code',
-                timeout: 150000 // Opus 非常慢，给足 150s
+                timeout: 110000
             },
             'grok-fast': {
                 name: 'Grok 4.1 Fast (代码)',
                 model: 'x-ai/grok-4.1-fast',
-                cost: 0.01,
+                cost: 0.01,    // 输入$0.20/M + 输出$0.50/M
                 type: 'code',
                 timeout: 100000
-            },
-            'claude-sonnet-4.5': {
-                name: 'Claude Sonnet 4.5 (代码)',
-                model: 'anthropic/claude-sonnet-4.5',
-                cost: 0.08,
-                type: 'code',
-                timeout: 130000
             },
             'claude-haiku-4.5': {
                 name: 'Claude Haiku 4.5 (代码)',
                 model: 'anthropic/claude-haiku-4.5',
-                cost: 0.03, // 用户设置的价格
+                cost: 0.03,    // 输入$1.00/M + 输出$5.00/M
                 type: 'code',
-                timeout: 90000 // Haiku 响应较快，90s 应该足够
+                timeout: 90000
             },
-            // 以下模型暂时不可用，已注释
-            // 'deepseek-chat-v3': {
-            //     name: 'DeepSeek Chat v3.1 (代码) (免费)',
-            //     model: 'deepseek/deepseek-chat-v3.1',
-            //     cost: 0,
-            //     type: 'code'
-            // },
-            // 'deepseek-r1': {
-            //     name: 'DeepSeek R1 Distill (代码) (免费)',
-            //     model: 'deepseek/deepseek-r1-distill-qwen-8b',
-            //     cost: 0,
-            //     type: 'code'
-            // },
-            // 'qwen-coder-plus': {
-            //     name: 'Qwen3 Coder Plus (代码)',
-            //     model: 'qwen/qwen3-coder-plus',
-            //     cost: 0.001,
-            //     type: 'code'
-            // }
+            'claude-sonnet-4.6': {
+                name: 'Claude Sonnet 4.6 🆕',
+                model: 'anthropic/claude-sonnet-4.6',
+                cost: 0.08,    // 输入$3.00/M + 输出$15.00/M
+                type: 'code',
+                timeout: 130000
+            },
         };
 
         // 模板
@@ -1265,20 +1200,14 @@
 
             container.innerHTML = '';
 
-            // 推荐的6个模型（默认选中的）
-            // 1）Gemini 2.5 Flash Image (免费)
-            // 2）Gemini 3 Pro Image (免费)
-            // 3）Claude 3.5 (描述)
-            // 4）Grok 4.1 Fast (代码)
-            // 5）Claude Haiku 4.5 (代码)
-            // 6）DeepSeek Coder (代码)
+            // 推荐的 6 个默认模型（精选，2026-03 更新）
             const defaultMainPageModels = [
-                'gemini-flash',      // Gemini 2.5 Flash Image (免费)
-                'gemini-pro',        // Gemini 3 Pro Image (免费)
-                'claude',            // Claude 3.5 (描述)
-                'grok-fast',         // Grok 4.1 Fast (代码)
-                'claude-haiku-4.5',  // Claude Haiku 4.5 (代码)
-                'deepseek-code'      // DeepSeek Coder (代码)
+                'gemini-flash',      // Gemini 2.5 Flash Image
+                'gemini-3.1-flash',  // Gemini 3.1 Flash Image（新）
+                'deepseek-v3',       // DeepSeek V3.1（极性价比）
+                'qwen-coder',        // Qwen3 Coder（新）
+                'grok-fast',         // Grok 4.1 Fast
+                'claude-haiku-4.5',  // Claude Haiku 4.5
             ];
 
             // 获取保存的选中模型
@@ -1342,16 +1271,14 @@
 
             container.innerHTML = '';
 
-            // 主页面默认显示的模型列表（推荐的8个模型）
+            // 主页面默认显示的模型列表（精选 6 个，2026-03 更新）
             const defaultMainPageModels = [
-                'gemini-flash',      // Gemini 2.5 Flash Image (免费)
-                'gemini-pro',        // Gemini 3 Pro Image (免费)
-                'claude',            // Claude 3.5 (描述)
-                'grok-fast',         // Grok 4.1 Fast (代码)
-                'claude-haiku-4.5',  // Claude Haiku 4.5 (代码)
-                'deepseek-code',     // DeepSeek Coder (代码)
-                'qwen-coder',        // Qwen 2.5 (代码)
-                'deepseek-v3'        // DeepSeek V3 (代码)
+                'gemini-flash',      // Gemini 2.5 Flash Image
+                'gemini-3.1-flash',  // Gemini 3.1 Flash Image（新）
+                'deepseek-v3',       // DeepSeek V3.1（极性价比）
+                'qwen-coder',        // Qwen3 Coder（新）
+                'grok-fast',         // Grok 4.1 Fast
+                'claude-haiku-4.5',  // Claude Haiku 4.5
             ];
 
             // 获取设置中保存的勾选状态
@@ -1555,9 +1482,9 @@
             const parentElement = charCountElement.parentElement;
 
             // 字符计数样式：接近限制时显示警告色
-            if (count > 500) {
-                input.value = input.value.substring(0, 500);
-                charCountElement.textContent = 500;
+            if (count > 1000) {
+                input.value = input.value.substring(0, 1000);
+                charCountElement.textContent = 1000;
                 parentElement.className = 'absolute bottom-4 right-4 text-red-400 text-xs font-mono font-semibold';
             } else {
                 charCountElement.textContent = count;
@@ -1700,6 +1627,73 @@
             updateCharCount();
         }
 
+        // ✨ 提示词优化
+        async function optimizePrompt() {
+            const input = document.getElementById('promptInput');
+            const rawPrompt = input.value.trim();
+
+            if (!rawPrompt) {
+                showToast('⚠️ 请先输入一段 UI 设计需求', 2000);
+                return;
+            }
+
+            // 更新按钮为加载状态
+            const btn = document.getElementById('optimizePromptBtn');
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+
+
+            try {
+                const systemPrompt = `你是一位资深的 UI/UX 设计师和 AI 提示词专家。
+用户会给你一段简短的 UI 界面描述，你需要将其扩展成一段详细、专业的 UI 设计需求描述，用于指导 AI 生成高质量的界面设计。
+
+要求：
+1. 保留用户原始意图，不改变核心功能
+2. 补充具体的 UI 组件（如：顶部导航栏、底部 tab 栏、卡片样式、列表结构等）
+3. 描述视觉风格（配色方向、圆角程度、阴影、字体层级）
+4. 补充关键的交互状态（选中态、空状态等）
+5. 输出长度 150-300 字，纯文字，不要 markdown 格式，不要解释说明，只输出扩写后的需求描述`;
+
+                const apiConfig = getApiConfig();
+                const response = await fetch(apiConfig.url, {
+                    method: 'POST',
+                    headers: apiConfig.headers,
+                    body: JSON.stringify({
+                        model: 'deepseek/deepseek-chat-v3.1',
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: rawPrompt }
+                        ],
+                        max_tokens: 600
+                    })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                const optimized = data.choices?.[0]?.message?.content?.trim();
+
+                if (optimized) {
+                    // 用动画效果替换内容
+                    input.style.opacity = '0.5';
+                    await new Promise(r => setTimeout(r, 150));
+                    input.value = optimized;
+                    input.style.opacity = '1';
+                    updateCharCount();
+                    showToast('✅ 提示词已优化，可直接生成或继续修改', 2500);
+                } else {
+                    throw new Error('模型未返回有效内容');
+                }
+            } catch (err) {
+                console.error('提示词优化失败:', err);
+                showToast('❌ 优化失败，请稍后重试', 2000);
+            } finally {
+                // 恢复按钮
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        }
+
         // 生成相关
         async function startGeneration() {
             // API Key 已移至服务器端，无需验证
@@ -1791,6 +1785,7 @@ Design constraints:
 - Elements: realistic UI components (buttons, inputs, cards)
 - Colors: harmonious color scheme
 - Output: high-fidelity UI mockup, NOT illustration
+- Language: ALL UI text (labels, buttons, titles, navigation, placeholders) MUST be in Simplified Chinese. Do NOT use English text in the UI.
 ${platformConstraints}
 
 Avoid: 3D elements, realistic photos, cartoon style`;
@@ -1978,6 +1973,8 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
         async function generateWithModel(modelKey, prompt, platform = 'mobile') {
             const config = MODEL_CONFIGS[modelKey];
+            // 切换卡片状态：排队中 → 生成中
+            setCardGenerating(modelKey);
 
             try {
                 let imageUrl = null;
@@ -2013,7 +2010,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                         description = descResult;
                     }
 
-                    const imageResult = await generateImage('google/gemini-2.5-flash-image-preview', description, platform);
+                    const imageResult = await generateImage('google/gemini-2.5-flash-image', description, platform);
                     if (typeof imageResult === 'object' && imageResult.imageUrl) {
                         imageUrl = imageResult.imageUrl;
                         // 累加成本（描述 + 图片生成）
@@ -3011,15 +3008,16 @@ ${code}
             card.id = `result-card-${modelKey}`;
             card.className = 'image-card card-glow rounded-xl overflow-hidden card-animate';
 
-            // 生成中的占位符
+            // 初始状态：排队中
             const placeholderDiv = document.createElement('div');
+            placeholderDiv.id = `result-status-${modelKey}`;
             placeholderDiv.className = 'bg-stone-900/50 flex items-center justify-center p-6';
             placeholderDiv.style.height = '400px';
             placeholderDiv.innerHTML = `
                 <div class="text-center">
-                    <div class="spinner mx-auto mb-4"></div>
+                    <div class="text-3xl mb-4 opacity-40">🕐</div>
                     <div class="text-stone-300 text-sm font-medium mb-1">${config.name}</div>
-                    <div class="text-stone-500 text-xs">生成中...</div>
+                    <div class="text-amber-500/70 text-xs font-medium tracking-wide">排队中...</div>
                 </div>
             `;
 
@@ -3028,7 +3026,7 @@ ${code}
             infoDiv.innerHTML = `
                 <div class="flex justify-between items-center">
                     <span class="text-stone-200 font-semibold text-sm">${config.name}</span>
-                    <span class="text-stone-500 text-xs font-mono">$${config.cost.toFixed(2)}</span>
+                    <span class="text-stone-500 text-xs font-mono">$${config.cost.toFixed(4)}</span>
                 </div>
             `;
 
@@ -3036,6 +3034,21 @@ ${code}
             card.appendChild(infoDiv);
             document.getElementById('resultsGrid').appendChild(card);
         }
+
+        // 将卡片状态从"排队中"切换为"生成中"
+        function setCardGenerating(modelKey) {
+            const statusDiv = document.getElementById(`result-status-${modelKey}`);
+            if (!statusDiv) return;
+            const config = MODEL_CONFIGS[modelKey];
+            statusDiv.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner mx-auto mb-4"></div>
+                    <div class="text-stone-300 text-sm font-medium mb-1">${config ? config.name : modelKey}</div>
+                    <div class="text-emerald-400/80 text-xs font-medium tracking-wide">生成中...</div>
+                </div>
+            `;
+        }
+
 
         // 更新结果卡片状态
         function updateResultCard(modelKey, imageUrl = null, codeContent = null, isError = false, errorMsg = '', actualCost = null) {
@@ -4883,6 +4896,13 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             // 创建全屏预览模态框
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-50';
+            // 点击蒙层关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            });
 
             const modalContent = document.createElement('div');
 
@@ -4940,27 +4960,14 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     下载图片
                 </button>
-                <button class="view-code-btn flex-1 bg-stone-700 hover:bg-stone-600 text-stone-200 font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                    查看代码
-                </button>
-                <button class="close-preview-btn flex-1 btn-secondary py-3 rounded-xl font-semibold">
-                    关闭
-                </button>
             `;
 
 
-            // 关闭按钮
+            // 关闭按钮（仅 header）
             header.querySelector('.close-preview-btn').onclick = () => {
                 modal.remove();
                 document.removeEventListener('keydown', handleEsc);
             };
-            footer.querySelectorAll('.close-preview-btn').forEach(btn => {
-                btn.onclick = () => {
-                    modal.remove();
-                    document.removeEventListener('keydown', handleEsc);
-                };
-            });
 
             // 复制图片按钮
             footer.querySelector('.copy-image-btn').onclick = async () => {
@@ -4990,44 +4997,8 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 }
             };
 
-            // 查看代码按钮
-            footer.querySelector('.view-code-btn').onclick = () => {
-                // 创建代码查看弹窗
-                const codeModal = document.createElement('div');
-                codeModal.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-sm';
-                codeModal.innerHTML = `
-                    <div class="bg-stone-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl m-4 flex flex-col">
-                        <div class="flex items-center justify-between p-4 border-b border-stone-700">
-                            <h3 class="text-lg font-semibold text-white">📝 代码预览 - ${modelName}</h3>
-                            <button class="close-code-modal text-stone-400 hover:text-white text-2xl">&times;</button>
-                        </div>
-                        <pre class="flex-1 overflow-auto p-4 text-sm text-stone-300 bg-stone-900"><code>${escapeHtml(codeContent)}</code></pre>
-                        <div class="p-4 border-t border-stone-700 flex gap-3">
-                            <button class="copy-code-btn flex-1 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2 rounded-lg">复制代码</button>
-                            <button class="download-code-btn flex-1 bg-stone-700 hover:bg-stone-600 text-stone-200 font-semibold py-2 rounded-lg">下载代码</button>
-                            <button class="close-code-modal flex-1 btn-secondary py-2 rounded-lg font-semibold">关闭</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(codeModal);
 
-                // 关闭代码弹窗
-                codeModal.querySelectorAll('.close-code-modal').forEach(btn => {
-                    btn.onclick = () => codeModal.remove();
-                });
 
-                // 复制代码
-                codeModal.querySelector('.copy-code-btn').onclick = () => {
-                    navigator.clipboard.writeText(codeContent).then(() => {
-                        showToast('✅ 代码已复制到剪贴板');
-                    });
-                };
-
-                // 下载代码
-                codeModal.querySelector('.download-code-btn').onclick = () => {
-                    downloadCode(codeContent, modelName);
-                };
-            };
 
             modalContent.appendChild(header);
             modalContent.appendChild(iframeContainer);
