@@ -10,21 +10,38 @@
 - **提示词优化**：一键 AI 扩写，单页聚焦，风格精准
 - **参考图上传**：支持上传参考图片辅助生成
 - **历史记录**：本地保存每次生成结果（缩略图 + 成本统计）
-- **图片操作**：复制图片 / 下载图片，所有卡片和模态框统一
 
-## 快速启动
+## 快速启动（本地）
 
 ```bash
-# 安装依赖
+# 1. 安装依赖
 npm install
 
-# 配置 API Key（复制 .env.example 并填入 OpenRouter API Key）
-cp .env.example .env
+# 2. 配置 API Key
+echo "OPENROUTER_API_KEY=sk-or-v1-xxx" > .env
 
-# 启动本地服务
+# 3. 启动服务
 node server.js
 # → 访问 http://localhost:3000
 ```
+
+## 部署到 Vercel
+
+1. 将代码推送到 GitHub
+2. 在 Vercel 中导入项目
+3. 在 Vercel 项目设置 → Environment Variables 中添加：
+   ```
+   OPENROUTER_API_KEY=sk-or-v1-your-actual-api-key-here
+   ```
+4. 部署即可 — API Key 保存在服务器端，不会暴露给前端
+
+## 统计数据（可选）
+
+每次生成后，花费数据会通过 `/api/stats` 上报到服务器端做全站统计（不含 prompt 等敏感信息）。
+
+如需持久化存储，可接入 Supabase：
+- 在 Vercel 添加 `SUPABASE_URL` 和 `SUPABASE_ANON_KEY`
+- 不配置则使用内存存储（重启后丢失），不影响本地功能
 
 ## 技术栈
 
@@ -33,17 +50,14 @@ node server.js
 | 前端 | 纯 HTML + Tailwind CSS + Vanilla JS |
 | 后端 | Node.js + Express |
 | AI 接入 | OpenRouter API |
-| 截图 | Puppeteer（代码转图片） |
-| 图片占位 | loremflickr.com（按场景关键词） |
+| 截图 | Puppeteer（代码转图片）|
+| 图片占位 | loremflickr.com（按场景关键词）|
 
-## 目录结构
+## 项目文档
 
-详见 → [PROJECT_MAP.md](./PROJECT_MAP.md)
-
-## 当前任务
-
-详见 → [TODO.md](./TODO.md)
-
-## 本次会话进度
-
-详见 → [SESSION.md](./SESSION.md)
+| 文件 | 说明 |
+|------|------|
+| [PROJECT_MAP.md](./PROJECT_MAP.md) | 文件结构 + 核心数据流 + 模型列表 |
+| [TODO.md](./TODO.md) | 待办 + 已完成任务 |
+| [SESSION.md](./SESSION.md) | 当前进度 + 已知问题 |
+| [PRD.md](./PRD.md) | 完整产品需求文档 |
