@@ -548,15 +548,7 @@
                         </svg>
                         历史记录
                     </button>
-                    <a href="admin.html" class="btn-secondary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2"
-                        title="模型中台 - 管理和测试AI模型">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
-                            </path>
-                        </svg>
-                        模型中台
-                    </a>
+                    <!-- 模型中台入口已隐藏 -->
                     <button onclick="showSettings()"
                         class="btn-secondary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -575,9 +567,9 @@
         <!-- Main Content -->
         <div class="grid md:grid-cols-12 gap-6 flex-1">
             <!-- Left: Input Panel -->
-            <div class="md:col-span-4">
-                <div
-                    class="glass rounded-2xl p-6 sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto scrollbar-styled">
+            <div class="md:col-span-4 flex flex-col">
+                <div class="glass rounded-2xl p-6 sticky top-4 overflow-y-auto scrollbar-styled"
+                    style="max-height:calc(100vh - 2rem - 96px - 2rem)">
                     <h2 class="text-lg font-bold text-stone-100 mb-5 flex items-center gap-2">
                         <span class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
                             <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -591,12 +583,10 @@
 
                     <!-- Prompt Input -->
                     <div class="mb-5">
-                        <label
-                            class="text-stone-400 text-xs font-medium mb-2 block uppercase tracking-wider">描述你想要的UI界面</label>
                         <div class="relative">
-                            <textarea id="promptInput" rows="4" maxlength="1000"
+                            <textarea id="promptInput" rows="5" maxlength="1000"
                                 class="w-full p-4 pr-16 pb-16 rounded-xl input-field resize-none text-sm leading-relaxed"
-                                placeholder="例如：极简风格的移动APP登录页面，包含logo、邮箱输入、密码输入、登录按钮..."></textarea>
+                                placeholder="描述你想要的UI界面&#10;例如：极简风格的移动APP登录页面，包含logo、邮箱输入、密码输入、登录按钮..."></textarea>
 
                             <!-- 图片上传区域（左下角） -->
                             <div class="absolute bottom-5 left-3 flex items-center gap-2 flex-wrap">
@@ -646,7 +636,7 @@
                         </div>
                     </div>
 
-                    <div class="divider my-5"></div>
+                    <!-- 目标平台 -->
 
                     <!-- Platform Selection -->
                     <div class="mb-5">
@@ -678,17 +668,20 @@
                         </div>
                     </div>
 
-                    <!-- Model Selection -->
-                    <div class="mb-5">
+                    <div class="divider my-5"></div>
+
+                    <!-- 模型选择 -->
+                    <div>
                         <label
                             class="text-stone-400 text-xs font-medium mb-3 block uppercase tracking-wider">选择AI模型</label>
-                        <div class="space-y-2 max-h-52 overflow-y-auto scrollbar-styled pr-1" id="modelSelectionList">
+                        <div class="overflow-y-auto scrollbar-styled pr-1 space-y-2" id="modelSelectionList">
                             <!-- 模型列表将在这里动态生成 -->
                         </div>
                     </div>
 
-                    <!-- Cost Estimate and Generate Button -->
-                    <div class="mt-6">
+                    <!-- 费用+生成按钮：sticky 到面板底部 -->
+                    <div class="sticky bottom-0 mt-4 -mx-6 -mb-6 px-6 pb-6 pt-4"
+                        style="background:inherit; backdrop-filter:blur(20px);">
                         <div class="bg-stone-800/50 p-4 rounded-t-xl border border-stone-700/50 border-b-0">
                             <div class="flex justify-between items-center">
                                 <span class="text-stone-400 text-sm">预计成本</span>
@@ -976,9 +969,9 @@
 
     <!-- Image Preview Modal -->
     <div id="imageModal"
-        class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50 modal-backdrop"
-        onclick="closeImageModal()">
-        <div class="max-w-5xl max-h-[90vh] overflow-auto relative">
+        class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50 modal-backdrop flex-col gap-4"
+        onclick="if(event.target===this)closeImageModal()">
+        <div class="relative max-w-5xl max-h-[80vh] overflow-auto">
             <button
                 class="absolute top-4 right-4 w-10 h-10 rounded-xl bg-stone-800/80 hover:bg-stone-700 flex items-center justify-center text-stone-400 hover:text-stone-200 transition z-10"
                 onclick="event.stopPropagation(); closeImageModal();">
@@ -987,7 +980,27 @@
                     </path>
                 </svg>
             </button>
-            <img id="modalImage" src="" class="w-full rounded-xl shadow-2xl">
+            <img id="modalImage" src="" class="w-full">
+        </div>
+        <!-- 底部按钮 -->
+        <div id="imageModalFooter" class="flex gap-3">
+            <button id="modalCopyBtn"
+                class="flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                    </path>
+                </svg>
+                复制图片
+            </button>
+            <button id="modalDownloadBtn"
+                class="flex items-center gap-2 px-6 py-3 bg-stone-700 hover:bg-stone-600 text-stone-200 font-semibold rounded-xl transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                下载图片
+            </button>
         </div>
     </div>
 
@@ -1639,8 +1652,10 @@
 
             // 更新按钮为加载状态
             const btn = document.getElementById('optimizePromptBtn');
+            const originalInner = btn.innerHTML;
             btn.disabled = true;
-            btn.style.opacity = '0.5';
+            btn.innerHTML = '<div class="spinner w-4 h-4"></div>';
+            btn.style.opacity = '1';
 
 
             try {
@@ -1650,7 +1665,7 @@
 要求：
 1. 保留用户原始意图，不改变核心功能
 2. 补充具体的 UI 组件（如：顶部导航栏、底部 tab 栏、卡片样式、列表结构等）
-3. 描述视觉风格（配色方向、圆角程度、阴影、字体层级）
+3. 描述整体视觉风格方向（不要指定具体颜色）
 4. 补充关键的交互状态（选中态、空状态等）
 5. 输出长度 150-300 字，纯文字，不要 markdown 格式，不要解释说明，只输出扩写后的需求描述`;
 
@@ -1690,7 +1705,7 @@
             } finally {
                 // 恢复按钮
                 btn.disabled = false;
-                btn.style.opacity = '1';
+                btn.innerHTML = originalInner;
             }
         }
 
@@ -1754,7 +1769,8 @@ Mobile-specific constraints (CRITICAL - must follow):
 - Layout: Portrait orientation (vertical/portrait layout), single column design
 - Screen ratio: 9:16 or similar mobile aspect ratio (tall and narrow)
 - Navigation: Include mobile navigation elements (bottom tab bar, hamburger menu, or top navigation bar)
-- Status bar: Include iOS status bar (with time, battery, signal) or Android status bar at the top
+- NO phone hardware frame, NO device bezel, NO status bar (no time, no battery icon, no signal bars)
+- Content only: output only the app screen content without any surrounding device mockup
 - Touch targets: Large touch-friendly buttons and interactive elements (minimum 44x44px equivalent)
 - Spacing: Generous padding and margins suitable for mobile screens
 - Typography: Mobile-optimized font sizes, readable on small screens
@@ -2207,7 +2223,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                             errorMessage = `图片生成失败: 403 - ${error.error.message}\n\n可能的原因：\n- API密钥权限不足\n- 地区限制\n- 账户被限制访问`;
                         }
                     } else if (statusCode === 429) {
-                        errorMessage = '图片生成失败: 429 - 请求频率过高\n\n原因：免费模型限流或API调用次数超限\n解决方案：\n1. 稍后重试\n2. 添加自己的API密钥以获取更高限额';
+                        errorMessage = '图片生成失败: 429 - 请求频率过高\n\n原因：该模型的 Provider 端限流（与是否付费无关）\n解决方案：稍后重试，或切换其他图片模型';
                     } else if (statusCode === 401) {
                         errorMessage = '图片生成失败: 401 - API密钥无效\n\n原因：服务器端API密钥配置错误或已过期\n解决方案：请联系管理员检查服务器配置';
                     } else {
@@ -2818,7 +2834,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                                 if (statusCode === 403) {
                                     errorMessage = '代码生成失败: 403 - 权限错误\n\n可能的原因：\n- API密钥权限不足\n- 地区限制\n- 账户被限制访问';
                                 } else if (statusCode === 429) {
-                                    errorMessage = '代码生成失败: 429 - 请求频率过高，请稍后重试';
+                                    errorMessage = '代码生成失败: 429 - 请求频率过高\n\n原因：Provider 端限流（与是否付费无关）\n解决方案：稍后重试，或切换其他模型';
                                 } else {
                                     errorMessage = `代码生成失败: ${statusCode} - ${errorText.substring(0, 100)}`;
                                 }
@@ -3006,13 +3022,14 @@ ${code}
             const config = MODEL_CONFIGS[modelKey];
             const card = document.createElement('div');
             card.id = `result-card-${modelKey}`;
-            card.className = 'image-card card-glow rounded-xl overflow-hidden card-animate';
+            card.className = 'image-card card-glow rounded-xl overflow-hidden card-animate flex flex-col';
+            card.style.height = '540px';
 
             // 初始状态：排队中
             const placeholderDiv = document.createElement('div');
             placeholderDiv.id = `result-status-${modelKey}`;
-            placeholderDiv.className = 'bg-stone-900/50 flex items-center justify-center p-6';
-            placeholderDiv.style.height = '400px';
+            placeholderDiv.className = 'bg-stone-900/50 flex items-center justify-center p-6 flex-1';
+            placeholderDiv.style.minHeight = '0';
             placeholderDiv.innerHTML = `
                 <div class="text-center">
                     <div class="text-3xl mb-4 opacity-40">🕐</div>
@@ -3044,7 +3061,7 @@ ${code}
                 <div class="text-center">
                     <div class="spinner mx-auto mb-4"></div>
                     <div class="text-stone-300 text-sm font-medium mb-1">${config ? config.name : modelKey}</div>
-                    <div class="text-emerald-400/80 text-xs font-medium tracking-wide">生成中...</div>
+                    <div class="text-amber-400/80 text-xs font-medium tracking-wide">生成中...</div>
                 </div>
             `;
         }
@@ -3068,8 +3085,8 @@ ${code}
             if (isError) {
                 // 错误状态 - 统一尺寸
                 const errorDiv = document.createElement('div');
-                errorDiv.className = 'bg-red-500/5 flex items-center justify-center p-6';
-                errorDiv.style.height = '400px';
+                errorDiv.className = 'bg-red-500/5 flex items-center justify-center p-6 flex-1';
+                errorDiv.style.minHeight = '0';
                 errorDiv.innerHTML = `
                     <div class="text-center">
                         <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-red-500/10 flex items-center justify-center">
@@ -3087,20 +3104,31 @@ ${code}
                         <span class="text-stone-200 font-semibold text-sm">${config.name}</span>
                         <span class="text-stone-500 text-xs font-mono">$${displayCost.toFixed(4)}</span>
                     </div>
-                    <button class="w-full bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-sm py-2.5 rounded-lg transition flex items-center justify-center gap-2">
+                    <button class="retry-btn w-full bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-sm py-2.5 rounded-lg transition flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                         重试
                     </button>
                 `;
-                infoDiv.querySelector('button').onclick = () => retryModel(config.name);
+                infoDiv.querySelector('.retry-btn').onclick = async (e) => {
+                    const btn = e.currentTarget;
+                    const origInner = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<div class="spinner w-4 h-4"></div><span>重试中...</span>';
+                    try {
+                        await retryModel(config.name);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = origInner;
+                    }
+                };
 
                 card.appendChild(errorDiv);
                 card.appendChild(infoDiv);
             } else if (codeContent) {
                 // 代码内容 - 统一尺寸，只显示首屏
                 const codeContainer = document.createElement('div');
-                codeContainer.className = 'bg-stone-900/30 flex flex-col overflow-hidden';
-                codeContainer.style.height = '500px';
+                codeContainer.className = 'flex flex-col flex-1 overflow-hidden';
+                codeContainer.style.minHeight = '0';
 
                 const previewArea = document.createElement('div');
                 previewArea.className = 'flex-1 relative cursor-pointer hover:opacity-95 transition overflow-hidden';
@@ -3188,53 +3216,64 @@ ${code}
                         <span class="text-stone-500 text-xs font-mono">$${displayCost.toFixed(4)}</span>
                     </div>
                     <div class="flex gap-2">
-                        <button class="flex-1 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                            代码
+                        <button class="code-copy-btn flex-1 bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            复制图片
                         </button>
-                        <button class="flex-1 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
+                        <button class="code-dl-btn flex-1 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            下载
+                            下载图片
                         </button>
                     </div>
                 `;
 
-                infoDiv.querySelectorAll('button')[0].onclick = (e) => {
+                infoDiv.querySelector('.code-copy-btn').onclick = async (e) => {
                     e.stopPropagation();
-                    showCodeModal(codeContent, config.name);
-                };
-
-                infoDiv.querySelectorAll('button')[1].onclick = async (e) => {
-                    e.stopPropagation();
+                    const btn = e.currentTarget;
+                    const origInner = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<div class="spinner w-3.5 h-3.5"></div>';
                     const platformRadio = document.querySelector('input[name="platform"]:checked');
                     const currentPlatform = platformRadio ? platformRadio.value : 'mobile';
-
-                    // 显示加载提示
                     showToast('🖼️ 正在生成图片...', 2000);
-
                     try {
-                        // 将代码转换为图片
                         const imageData = await codeToImage(codeContent, currentPlatform);
-
                         if (imageData) {
-                            // 下载图片
+                            const res = await fetch(imageData);
+                            const blob = await res.blob();
+                            await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                            showToast('✅ 图片已复制到剪贴板', 2000);
+                        } else {
+                            showCodePreview(codeContent, config.name, currentPlatform);
+                            setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
+                        }
+                    } catch { showToast('❌ 复制失败，请用下载', 2000); }
+                    finally { btn.disabled = false; btn.innerHTML = origInner; }
+                };
+
+                infoDiv.querySelector('.code-dl-btn').onclick = async (e) => {
+                    e.stopPropagation();
+                    const btn = e.currentTarget;
+                    const origInner = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<div class="spinner w-3.5 h-3.5"></div>';
+                    const platformRadio = document.querySelector('input[name="platform"]:checked');
+                    const currentPlatform = platformRadio ? platformRadio.value : 'mobile';
+                    showToast('🖼️ 正在生成图片...', 2000);
+                    try {
+                        const imageData = await codeToImage(codeContent, currentPlatform);
+                        if (imageData) {
                             await downloadImage(imageData, config.name);
                             showToast('✅ 图片已生成并下载', 2000);
                         } else {
-                            // 如果生成失败，打开全屏预览让用户截图
                             showCodePreview(codeContent, config.name, currentPlatform);
-                            setTimeout(() => {
-                                showToast('💡 提示：请在全屏预览中按 Cmd+Shift+4 (Mac) 或 Win+Shift+S (Windows) 截图保存', 4000);
-                            }, 500);
+                            setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
                         }
-                    } catch (error) {
-                        console.error('生成图片失败:', error);
-                        // 如果生成失败，打开全屏预览让用户截图
+                    } catch {
                         showCodePreview(codeContent, config.name, currentPlatform);
-                        setTimeout(() => {
-                            showToast('💡 提示：请在全屏预览中按 Cmd+Shift+4 (Mac) 或 Win+Shift+S (Windows) 截图保存', 4000);
-                        }, 500);
+                        setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
                     }
+                    finally { btn.disabled = false; btn.innerHTML = origInner; }
                 };
 
                 codeContainer.appendChild(infoDiv);
@@ -3246,8 +3285,8 @@ ${code}
 
                 if (isBase64 || isHttpUrl) {
                     const imgContainer = document.createElement('div');
-                    imgContainer.className = 'relative';
-                    imgContainer.style.height = '400px';
+                    imgContainer.className = 'relative flex-1';
+                    imgContainer.style.minHeight = '0';
                     imgContainer.style.width = '100%';
                     imgContainer.style.display = 'flex';
                     imgContainer.style.alignItems = 'center';
@@ -3262,7 +3301,7 @@ ${code}
                     }
 
                     const img = document.createElement('img');
-                    img.className = 'object-contain rounded-lg shadow-2xl';
+                    img.className = 'object-contain';
                     img.style.maxWidth = '100%';
                     img.style.maxHeight = '100%';
                     img.style.width = 'auto';
@@ -3296,14 +3335,27 @@ ${code}
                             <span class="text-stone-500 text-xs font-mono">$${displayCost.toFixed(4)}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button class="flex-1 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
+                            <button class="copy-img-btn flex-1 bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                复制图片
+                            </button>
+                            <button class="dl-img-btn flex-1 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                 下载图片
                             </button>
                         </div>
                     `;
 
-                    infoDiv.querySelector('button').onclick = (e) => {
+                    infoDiv.querySelector('.copy-img-btn').onclick = async (e) => {
+                        e.stopPropagation();
+                        try {
+                            const res = await fetch(imageUrl);
+                            const blob = await res.blob();
+                            await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                            showToast('✅ 图片已复制到剪贴板', 2000);
+                        } catch { showToast('❌ 复制失败，请使用下载', 2000); }
+                    };
+                    infoDiv.querySelector('.dl-img-btn').onclick = (e) => {
                         e.stopPropagation();
                         downloadImage(imageUrl, config.name);
                     };
@@ -3717,6 +3769,21 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             document.getElementById('modalImage').src = imageUrl;
             document.getElementById('imageModal').classList.remove('hidden');
             document.getElementById('imageModal').classList.add('flex');
+            // 绑定底部按钮
+            document.getElementById('modalCopyBtn').onclick = async () => {
+                try {
+                    const res = await fetch(imageUrl);
+                    const blob = await res.blob();
+                    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                    showToast('✅ 图片已复制到剪贴板', 2000);
+                } catch { showToast('❌ 复制失败', 2000); }
+            };
+            document.getElementById('modalDownloadBtn').onclick = () => {
+                const a = document.createElement('a');
+                a.href = imageUrl;
+                a.download = `ui-design-${Date.now()}.png`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            };
         }
 
         function closeImageModal() {
@@ -4222,42 +4289,36 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 const existingHistory = JSON.parse(localStorage.getItem('generation_history') || '[]');
                 console.log('🔵 现有历史记录数量:', existingHistory.length);
 
-                // 为每个结果生成缩略图（异步）
+                // 为每个结果生成缩略图（异步）— 只存缩略图，不存完整数据，避免 localStorage 溢出
                 const processedResults = await Promise.all(results.map(async (r) => {
                     const result = {
                         modelName: r.modelName,
                         cost: r.cost,
                         isError: r.isError,
                         errorMsg: r.errorMsg,
-                        thumbnail: null,
-                        imageUrl: null, // 保存完整图片数据
-                        codeContent: null // 保存代码内容用于历史记录预览
+                        thumbnail: null
+                        // 注意：不存 imageUrl 和 codeContent（太大，会导致 localStorage 溢出）
                     };
 
-                    // 如果成功且有图片，保存完整图片数据并生成缩略图
+                    // 如果成功且有图片，生成小缩略图保存（JPEG 0.5 质量，宽高上限 120px）
                     if (!r.isError && r.imageUrl) {
-                        // 保存完整图片数据（base64 或 URL）
-                        result.imageUrl = r.imageUrl;
-                        // 生成缩略图
-                        result.thumbnail = await generateThumbnail(r.imageUrl, 150);
+                        result.thumbnail = await generateThumbnail(r.imageUrl, 120);
                         console.log('📸 生成缩略图:', r.modelName, result.thumbnail ? '成功' : '失败');
                     }
 
-                    // 如果成功且有代码内容，保存代码内容用于预览
+                    // 如果成功且有代码内容，生成缩略图（通过 puppeteer 截图后缩小）
                     if (!r.isError && r.codeContent) {
-                        result.codeContent = r.codeContent;
-                        // 为代码内容生成缩略图（通过iframe渲染后截图）
                         try {
-                            result.thumbnail = await generateCodeThumbnail(r.codeContent, 150, platform);
+                            result.thumbnail = await generateCodeThumbnail(r.codeContent, 120, platform);
                             console.log('📸 生成代码缩略图:', r.modelName, result.thumbnail ? '成功' : '失败');
                         } catch (error) {
                             console.error('生成代码缩略图失败:', error);
-                            result.thumbnail = null;
                         }
                     }
 
                     return result;
                 }));
+
 
                 const historyItem = {
                     id: Date.now(),
@@ -4287,23 +4348,25 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 // 更新全局变量
                 generationHistory = finalHistory;
 
-                // 保存到 localStorage
-                localStorage.setItem('generation_history', JSON.stringify(finalHistory));
-
-                // 验证保存是否成功
-                const verifyHistory = JSON.parse(localStorage.getItem('generation_history') || '[]');
-                console.log('✅ 历史记录已保存:', {
-                    id: historyItem.id,
-                    prompt: prompt.substring(0, 30) + '...',
-                    resultsCount: results.length,
-                    totalHistoryCount: finalHistory.length,
-                    verifyCount: verifyHistory.length,
-                    saved: verifyHistory.length > 0 && verifyHistory[0].id === historyItem.id
-                });
-
-                if (verifyHistory.length === 0 || verifyHistory[0].id !== historyItem.id) {
-                    console.error('❌ 保存验证失败！历史记录可能未正确保存');
+                // 保存到 localStorage（带配额溢出保护）
+                let saved = false;
+                for (let trimCount = 0; trimCount <= finalHistory.length; trimCount++) {
+                    try {
+                        const toSave = trimCount === 0 ? finalHistory : finalHistory.slice(0, Math.max(1, finalHistory.length - trimCount));
+                        localStorage.setItem('generation_history', JSON.stringify(toSave));
+                        generationHistory = toSave;
+                        if (trimCount > 0) console.warn(`⚠️ localStorage 空间不足，已裁剪至 ${toSave.length} 条记录`);
+                        saved = true;
+                        break;
+                    } catch (e) {
+                        if (e.name === 'QuotaExceededError' || e.code === 22) {
+                            // 继续循环，减少条目再试
+                            continue;
+                        }
+                        throw e;
+                    }
                 }
+                if (!saved) console.error('❌ 无法保存历史记录：localStorage 已满');
 
                 // 保存到服务器（全站统计）
                 try {
