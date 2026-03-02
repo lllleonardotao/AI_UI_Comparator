@@ -520,10 +520,10 @@
     </style>
 </head>
 
-<body class="p-4 md:p-6 font-sans antialiased min-h-screen flex flex-col">
+<body class="p-3 md:p-4 font-sans antialiased min-h-screen flex flex-col">
     <div class="max-w-7xl mx-auto relative flex-1 flex flex-col w-full">
         <!-- Header -->
-        <header class="glass rounded-2xl p-5 mb-8 border border-stone-800/50">
+        <header class="glass rounded-2xl p-4 mb-4 border border-stone-800/50">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <!-- Logo -->
@@ -568,9 +568,9 @@
         <div class="grid md:grid-cols-12 gap-6 flex-1">
             <!-- Left: Input Panel -->
             <div class="md:col-span-4 flex flex-col">
-                <div class="glass rounded-2xl p-6 sticky top-4 overflow-y-auto scrollbar-styled"
-                    style="max-height:calc(100vh - 2rem - 96px - 2rem)">
-                    <h2 class="text-lg font-bold text-stone-100 mb-5 flex items-center gap-2">
+                <div class="glass rounded-2xl p-5 flex flex-col"
+                    style="height:calc(100vh - 1.5rem - 60px - 1rem); overflow: hidden; position: sticky; top: 0.75rem;">
+                    <h2 class="text-lg font-bold text-stone-100 mb-3 flex items-center gap-2">
                         <span class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
                             <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -582,10 +582,10 @@
                     </h2>
 
                     <!-- Prompt Input -->
-                    <div class="mb-5">
+                    <div class="mb-3">
                         <div class="relative">
-                            <textarea id="promptInput" rows="5" maxlength="1000"
-                                class="w-full p-4 pr-16 pb-16 rounded-xl input-field resize-none text-sm leading-relaxed"
+                            <textarea id="promptInput" rows="3" maxlength="1000"
+                                class="w-full p-3 pr-16 pb-12 rounded-xl input-field resize-none text-sm leading-relaxed"
                                 placeholder="描述你想要的UI界面&#10;例如：极简风格的移动APP登录页面，包含logo、邮箱输入、密码输入、登录按钮..."></textarea>
 
                             <!-- 图片上传区域（左下角） -->
@@ -623,9 +623,9 @@
                     </div>
 
                     <!-- Quick Templates -->
-                    <div class="mb-5">
+                    <div class="mb-3">
                         <label
-                            class="text-stone-400 text-xs font-medium mb-2 block uppercase tracking-wider">快捷模板</label>
+                            class="text-stone-400 text-xs font-medium mb-1.5 block uppercase tracking-wider">快捷模板</label>
                         <div class="flex flex-wrap gap-2">
                             <button onclick="useTemplate('dashboard')"
                                 class="text-xs bg-stone-800/50 hover:bg-stone-800 text-stone-400 hover:text-amber-500 font-medium px-3 py-1.5 rounded-lg transition border border-stone-700/50 hover:border-amber-500/30">理财仪表盘</button>
@@ -639,12 +639,12 @@
                     <!-- 目标平台 -->
 
                     <!-- Platform Selection -->
-                    <div class="mb-5">
+                    <div class="mb-3">
                         <label
-                            class="text-stone-400 text-xs font-medium mb-3 block uppercase tracking-wider">目标平台</label>
-                        <div class="grid grid-cols-2 gap-3">
+                            class="text-stone-400 text-xs font-medium mb-2 block uppercase tracking-wider">目标平台</label>
+                        <div class="grid grid-cols-2 gap-2">
                             <label
-                                class="flex items-center justify-center gap-2 bg-stone-800/30 hover:bg-stone-800/50 p-3 rounded-xl cursor-pointer transition border border-stone-700/50 has-[:checked]:border-amber-500/50 has-[:checked]:bg-amber-500/10">
+                                class="flex items-center justify-center gap-2 bg-stone-800/30 hover:bg-stone-800/50 p-2.5 rounded-xl cursor-pointer transition border border-stone-700/50 has-[:checked]:border-amber-500/50 has-[:checked]:bg-amber-500/10">
                                 <input type="radio" name="platform" value="mobile" class="sr-only" checked>
                                 <svg class="w-5 h-5 text-stone-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -655,7 +655,7 @@
                                 <span class="text-stone-300 font-medium text-sm">手机端</span>
                             </label>
                             <label
-                                class="flex items-center justify-center gap-2 bg-stone-800/30 hover:bg-stone-800/50 p-3 rounded-xl cursor-pointer transition border border-stone-700/50 has-[:checked]:border-amber-500/50 has-[:checked]:bg-amber-500/10">
+                                class="flex items-center justify-center gap-2 bg-stone-800/30 hover:bg-stone-800/50 p-2.5 rounded-xl cursor-pointer transition border border-stone-700/50 has-[:checked]:border-amber-500/50 has-[:checked]:bg-amber-500/10">
                                 <input type="radio" name="platform" value="desktop" class="sr-only">
                                 <svg class="w-5 h-5 text-stone-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -668,19 +668,20 @@
                         </div>
                     </div>
 
-                    <div class="divider my-5"></div>
+                    <div class="divider my-3"></div>
 
                     <!-- 模型选择 -->
-                    <div>
+                    <div class="flex flex-col flex-1 min-h-0">
                         <label
-                            class="text-stone-400 text-xs font-medium mb-3 block uppercase tracking-wider">选择AI模型</label>
-                        <div class="overflow-y-auto scrollbar-styled pr-1 space-y-2 pb-36" id="modelSelectionList">
+                            class="text-stone-400 text-xs font-medium mb-2 block uppercase tracking-wider">选择AI模型</label>
+                        <div class="overflow-y-auto scrollbar-styled pr-1 space-y-2 flex-1" id="modelSelectionList"
+                            style="min-height: 80px;">
                             <!-- 模型列表将在这里动态生成 -->
                         </div>
                     </div>
 
-                    <!-- 费用+生成按钮：sticky 到面板底部 -->
-                    <div class="sticky bottom-0 mt-4 -mx-6 -mb-6 px-6 pb-6 pt-4" style="background: rgba(28,25,23,1);">
+                    <!-- 费用+生成按钮：固定在面板底部 -->
+                    <div class="flex-shrink-0 mt-3">
                         <div class="bg-stone-800/50 p-4 rounded-t-xl border border-stone-700/50 border-b-0">
                             <div class="flex justify-between items-center">
                                 <span class="text-stone-400 text-sm">预计成本</span>
