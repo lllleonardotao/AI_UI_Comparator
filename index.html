@@ -353,24 +353,41 @@
             border: 1px solid rgba(248, 113, 113, 0.2);
         }
 
-        /* 自定义滚动条 */
-        .scrollbar-styled::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        /* 全局滚动条：统一暗色设计规范 */
+        *::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
         }
 
-        .scrollbar-styled::-webkit-scrollbar-track {
-            background: var(--surface);
-            border-radius: 3px;
+        *::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 4px;
         }
 
-        .scrollbar-styled::-webkit-scrollbar-thumb {
+        *::-webkit-scrollbar-thumb {
             background: var(--surface-overlay);
-            border-radius: 3px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        .scrollbar-styled::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
+        *::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        *::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        /* Firefox 兼容 */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--surface-overlay) transparent;
+        }
+
+        /* 保留 .scrollbar-styled 兼容原有标注 */
+        .scrollbar-styled::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
         }
 
         /* 隐藏滚动条 */
@@ -517,6 +534,24 @@
             background: var(--accent);
             border-radius: 2px;
         }
+
+        /* textarea 滚动条：与网站设计风格一致 */
+        textarea::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background: var(--surface-overlay);
+            border-radius: 4px;
+        }
+
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
     </style>
 </head>
 
@@ -568,8 +603,8 @@
         <div class="grid md:grid-cols-12 gap-6 flex-1">
             <!-- Left: Input Panel -->
             <div class="md:col-span-4 flex flex-col">
-                <div class="glass rounded-2xl p-5 flex flex-col"
-                    style="height:calc(100vh - 1.5rem - 60px - 1rem); overflow: hidden; position: sticky; top: 0.75rem;">
+                <div id="leftPanel"
+                    class="glass rounded-2xl p-5 flex flex-col max-h-[calc(100vh-1.5rem-60px-1rem)] sticky top-3">
                     <h2 class="text-lg font-bold text-stone-100 mb-3 flex items-center gap-2">
                         <span class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
                             <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -585,7 +620,7 @@
                     <div class="mb-3">
                         <div class="relative">
                             <textarea id="promptInput" rows="3" maxlength="1000"
-                                class="w-full p-3 pr-16 pb-12 rounded-xl input-field resize-none text-sm leading-relaxed"
+                                class="w-full p-3 pr-16 pb-12 rounded-xl input-field resize-none text-sm leading-relaxed scrollbar-styled"
                                 placeholder="描述你想要的UI界面&#10;例如：极简风格的移动APP登录页面，包含logo、邮箱输入、密码输入、登录按钮..."></textarea>
 
                             <!-- 图片上传区域（左下角） -->
@@ -636,8 +671,6 @@
                         </div>
                     </div>
 
-                    <!-- 目标平台 -->
-
                     <!-- Platform Selection -->
                     <div class="mb-3">
                         <label
@@ -671,17 +704,17 @@
                     <div class="divider my-3"></div>
 
                     <!-- 模型选择 -->
-                    <div class="flex flex-col flex-1 min-h-0">
+                    <div class="flex flex-col">
                         <label
                             class="text-stone-400 text-xs font-medium mb-2 block uppercase tracking-wider">选择AI模型</label>
-                        <div class="overflow-y-auto scrollbar-styled pr-1 space-y-2 flex-1" id="modelSelectionList"
-                            style="min-height: 80px;">
+                        <div class="overflow-y-auto scrollbar-styled pr-1 space-y-2 min-h-[80px]"
+                            id="modelSelectionList">
                             <!-- 模型列表将在这里动态生成 -->
                         </div>
                     </div>
 
-                    <!-- 费用+生成按钮：固定在面板底部 -->
-                    <div class="flex-shrink-0 mt-3">
+                    <!-- 费用+生成按钮：内容短时跟随列表，内容长时固定底部 -->
+                    <div id="generateBtnSection" class="mt-3">
                         <div class="bg-stone-800/50 p-4 rounded-t-xl border border-stone-700/50 border-b-0">
                             <div class="flex justify-between items-center">
                                 <span class="text-stone-400 text-sm">预计成本</span>
@@ -712,7 +745,7 @@
                 </div>
 
                 <!-- Results -->
-                <div id="resultsContainer" class="glass rounded-2xl p-6 flex flex-col min-h-[calc(100vh-12rem)]">
+                <div id="resultsContainer" class="glass rounded-2xl p-6 flex flex-col">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-stone-100 flex items-center gap-2">
                             <span class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
@@ -971,7 +1004,7 @@
     <div id="imageModal"
         class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50 modal-backdrop flex-col gap-4"
         onclick="if(event.target===this)closeImageModal()">
-        <div class="relative max-w-5xl max-h-[80vh] overflow-auto">
+        <div class="relative max-w-5xl max-h-[80vh] overflow-auto scrollbar-styled">
             <button
                 class="absolute top-4 right-4 w-10 h-10 rounded-xl bg-stone-800/80 hover:bg-stone-700 flex items-center justify-center text-stone-400 hover:text-stone-200 transition z-10"
                 onclick="event.stopPropagation(); closeImageModal();">
@@ -1385,6 +1418,8 @@
 
             // 更新成本估算
             updateCostEstimate();
+            // 调整模型列表高度
+            adjustModelListHeight();
         }
 
         // 保存上次生成时的模型选择
@@ -1400,11 +1435,39 @@
         }
 
 
+        // 动态调整模型列表高度：内容短时按钮跟随，内容长时按钮固定底部
+        function adjustModelListHeight() {
+            const panel = document.getElementById('leftPanel');
+            const modelList = document.getElementById('modelSelectionList');
+            const btnSection = document.getElementById('generateBtnSection');
+            if (!panel || !modelList || !btnSection) return;
+
+            // 重置限制，测量自然高度
+            modelList.style.maxHeight = 'none';
+
+            requestAnimationFrame(() => {
+                const vh = window.innerHeight;
+                const modelListTop = modelList.getBoundingClientRect().top;
+                const btnH = btnSection.offsetHeight;
+                const gap = 12; // mt-3 ≈ 0.75rem
+                const panelPadding = 20; // p-5 ≈ 1.25rem
+
+                const available = vh - modelListTop - gap - btnH - panelPadding;
+
+                if (modelList.scrollHeight > available && available > 80) {
+                    modelList.style.maxHeight = available + 'px';
+                } else {
+                    modelList.style.maxHeight = 'none';
+                }
+            });
+        }
+
         // 页面加载时初始化
         window.onload = () => {
             // API Key 已移至服务器端，前端无需检查
             updateCharCount();
             loadModelSelectionList(); // 加载模型列表（默认勾选设置中已选的模型）
+            adjustModelListHeight();
 
             // 恢复调试模式设置
             const debugCheckbox = document.getElementById('debugMode');
@@ -1420,20 +1483,25 @@
             // 监听窗口大小变化
             window.addEventListener('resize', () => {
                 syncResultsHeight();
+                adjustModelListHeight();
             });
         };
 
+        // 基准高度：首次同步后固定，不随内容减少
+        let baselineResultsHeight = 0;
+
         // 同步右侧结果区域高度与左侧输入面板
         function syncResultsHeight() {
-            const leftPanel = document.querySelector('.md\\:col-span-1 > div');
+            const leftPanel = document.getElementById('leftPanel');
             const resultsContainer = document.getElementById('resultsContainer');
+            if (!leftPanel || !resultsContainer) return;
 
-            if (leftPanel && resultsContainer) {
-                // 获取左侧面板的实际高度
-                const leftHeight = leftPanel.offsetHeight;
-                // 设置右侧结果区域的最小高度
-                resultsContainer.style.minHeight = `${leftHeight}px`;
+            const leftHeight = leftPanel.offsetHeight;
+            if (leftHeight > baselineResultsHeight) {
+                baselineResultsHeight = leftHeight;
             }
+            // 始终保持 min-height = 基准高度
+            resultsContainer.style.minHeight = baselineResultsHeight + 'px';
         }
 
 
