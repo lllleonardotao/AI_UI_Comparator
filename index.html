@@ -4703,10 +4703,9 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                                         <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                                     </div>
                                 </div>`;
+                    } else {
+                        return `<div class="w-16 h-16 bg-stone-800 rounded-lg flex items-center justify-center border border-stone-700/50" title="${r.modelName}"><svg class="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`;
                     }
-                } else {
-                    return `<div class="w-16 h-16 bg-stone-800 rounded-lg flex items-center justify-center border border-stone-700/50" title="${r.modelName}"><svg class="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`;
-                }
                 }).join('')}
                         ${item.results.length > 4 ? `<div class="w-16 h-16 bg-stone-800 rounded-lg flex items-center justify-center text-stone-400 text-xs font-medium border border-stone-700/50">+${item.results.length - 4}</div>` : ''}
                     </div>
@@ -4766,6 +4765,21 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                     });
                 });
             });
+        }
+
+        /**
+         * 自适应小数位数的花费格式化
+         * < $0.001  → 6 位小数
+         * < $0.01   → 4 位小数
+         * < $1      → 3 位小数
+         * ≥ $1      → 2 位小数
+         */
+        function formatCost(value) {
+            if (value === 0) return '$0.00';
+            if (value < 0.001) return `$${value.toFixed(6)}`;
+            if (value < 0.01) return `$${value.toFixed(4)}`;
+            if (value < 1) return `$${value.toFixed(3)}`;
+            return `$${value.toFixed(2)}`;
         }
 
         function updateCostStatistics(historyItems) {
@@ -4837,47 +4851,47 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             costStatsEl.classList.remove('hidden');
 
             // 默认显示的摘要（只显示平均每次）
-            const statsLabel = isServerStats ? '全站平均每次' : '平均每次';
+            const statsLabel = isServerStats ? '平均每次' : '平均每次';
             costStatsSummaryEl.innerHTML = `
-                <div class="flex items-center gap-2 text-gray-700">
-                    <span class="text-gray-600">${statsLabel}：</span>
-                    <span class="text-lg font-bold text-gray-800">$${grandAverage.toFixed(4)}</span>
-                    ${isServerStats ? '<span class="text-xs text-purple-600 ml-1">🌐 全站</span>' : ''}
+                <div class="flex items-center gap-2">
+                    <span class="text-stone-400">${statsLabel}：</span>
+                    <span class="text-xl font-bold text-amber-400 font-mono">${formatCost(grandAverage)}</span>
+                    ${isServerStats ? '<span class="text-xs text-stone-400 ml-1">🌐 全站</span>' : ''}
                 </div>
             `;
 
             // 详细内容（默认隐藏）
             const detailsTitle = isServerStats ? '按模型统计（全站）' : '按模型统计';
             let detailsHtml = `
-                ${isServerStats ? '<div class="text-purple-600 text-xs font-medium mb-2">🌐 全站统计数据</div>' : ''}
-                <div class="grid grid-cols-3 gap-4 mb-3 pb-3 border-b border-gray-300">
+                ${isServerStats ? '<div class="text-stone-400 text-xs font-medium mb-2">🌐 全站统计数据</div>' : ''}
+                <div class="grid grid-cols-3 gap-4 mb-3 pb-3 border-b border-stone-600/50">
                     <div class="text-center">
-                        <div class="text-gray-600 text-xs">${isServerStats ? '全站总花费' : '总花费'}</div>
-                        <div class="text-lg font-bold text-gray-800">$${grandTotal.toFixed(2)}</div>
+                        <div class="text-stone-400 text-xs">${isServerStats ? '全站总花费' : '总花费'}</div>
+                        <div class="text-lg font-bold text-amber-400 font-mono">${formatCost(grandTotal)}</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-gray-600 text-xs">${isServerStats ? '全站生成次数' : '总生成次数'}</div>
-                        <div class="text-lg font-bold text-gray-800">${totalGenerations}</div>
+                        <div class="text-stone-400 text-xs">${isServerStats ? '全站生成次数' : '总生成次数'}</div>
+                        <div class="text-lg font-bold text-stone-100">${totalGenerations}</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-gray-600 text-xs">平均每次</div>
-                        <div class="text-lg font-bold text-gray-800">$${grandAverage.toFixed(4)}</div>
+                        <div class="text-stone-400 text-xs">平均每次</div>
+                        <div class="text-lg font-bold text-amber-400 font-mono">${formatCost(grandAverage)}</div>
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <div class="text-gray-700 font-semibold text-xs mb-2">${detailsTitle}：</div>
+                    <div class="text-stone-300 font-semibold text-xs mb-2">${detailsTitle}：</div>
             `;
 
             sortedStats.forEach(stat => {
                 detailsHtml += `
-                    <div class="flex items-center justify-between py-2 px-3 bg-white/30 rounded-lg">
+                    <div class="flex items-center justify-between py-2 px-3 bg-stone-700/40 rounded-lg">
                         <div class="flex-1">
-                            <div class="text-gray-800 font-medium text-sm">${stat.modelName}</div>
-                            <div class="text-gray-600 text-xs mt-0.5">生成 ${stat.count} 次</div>
+                            <div class="text-stone-100 font-medium text-sm">${stat.modelName}</div>
+                            <div class="text-stone-400 text-xs mt-0.5">生成 ${stat.count} 次</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-gray-800 font-bold text-sm">$${stat.totalCost.toFixed(2)}</div>
-                            <div class="text-gray-600 text-xs">平均 $${stat.averageCost.toFixed(4)}</div>
+                            <div class="text-amber-400 font-bold text-sm font-mono">${formatCost(stat.totalCost)}</div>
+                            <div class="text-stone-400 text-xs font-mono">平均 ${formatCost(stat.averageCost)}</div>
                         </div>
                     </div>
                 `;

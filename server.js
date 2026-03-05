@@ -19,6 +19,9 @@ const puppeteer = require('puppeteer');
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const API_KEY = process.env.OPENROUTER_API_KEY || '';
 
+// 引入 stats 模块（用于本地处理 /api/stats 请求）
+const statsHandler = require('./api/stats');
+
 // 调试：检查 API Key 是否加载（不显示完整内容）
 if (API_KEY) {
   console.log(`✅ API Key 已加载: ${API_KEY.substring(0, 10)}...${API_KEY.substring(API_KEY.length - 4)}`);
@@ -48,6 +51,25 @@ const server = http.createServer(async (req, res) => {
   let pathname = parsedUrl.pathname;
 
   console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${pathname}`);
+
+  // 处理 /api/stats 请求（统计数据存取）
+  // api/stats.js 使用 Vercel serverless 风格（res.status().json()），需要适配原生 Node.js res
+  if (pathname === '/api/stats') {
+    const vercelRes = {
+      _headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      setHeader(key, value) { this._headers[key] = value; return this; },
+      status(code) { this._statusCode = code; return this; },
+      json(data) {
+        res.writeHead(this._statusCode || 200, this._headers);
+        res.end(JSON.stringify(data));
+      },
+      end() {
+        res.writeHead(this._statusCode || 200, this._headers);
+        res.end();
+      }
+    };
+    return statsHandler(req, vercelRes);
+  }
 
   // 处理 API 代理请求
   if (pathname === '/api/openrouter' && req.method === 'POST') {
