@@ -567,9 +567,10 @@
                         <span class="text-stone-900 text-xl font-bold">◈</span>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold tracking-tight">
+                        <h1 class="text-2xl font-bold tracking-tight flex items-center gap-2">
                             <span class="text-gradient">AI UI</span>
                             <span class="text-stone-100"> Comparator</span>
+                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 tracking-wide">FitAI v2.0</span>
                         </h1>
                         <p class="text-stone-500 text-sm mt-0.5">多模型 UI 设计对比生成器</p>
                     </div>
@@ -619,41 +620,38 @@
                     <!-- Prompt Input -->
                     <div class="mb-3">
                         <div class="relative">
-                            <textarea id="promptInput" rows="3" maxlength="1000"
-                                class="w-full p-3 pr-16 pb-12 rounded-xl input-field resize-none text-sm leading-relaxed scrollbar-styled"
+                            <textarea id="promptInput" rows="5" maxlength="1000"
+                                class="w-full p-3 rounded-t-xl input-field resize-none text-sm leading-relaxed scrollbar-styled"
+                                style="border-bottom-left-radius:0;border-bottom-right-radius:0;"
                                 placeholder="描述你想要的UI界面&#10;例如：极简风格的移动APP登录页面，包含logo、邮箱输入、密码输入、登录按钮..."></textarea>
+                        </div>
 
-                            <!-- 图片上传区域（左下角） -->
-                            <div class="absolute bottom-5 left-3 flex items-center gap-2 flex-wrap">
-                                <div id="referenceImagesContainer" class="flex items-center gap-2 flex-wrap"></div>
-                                <input type="file" id="referenceImageInput" accept="image/*" class="hidden"
-                                    onchange="handleImageUpload(event)" multiple>
-                                <button type="button" onclick="document.getElementById('referenceImageInput').click()"
-                                    class="w-9 h-9 flex items-center justify-center bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-amber-500 rounded-lg transition border border-stone-700"
-                                    title="添加参考图片">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <!-- 图片上传区域 + 优化按钮（textarea 下方工具栏，无间隙） -->
+                        <div class="flex items-center gap-2 flex-wrap px-3 py-2 bg-stone-800/40 rounded-b-xl border border-t-0 border-stone-700/40">
+                            <div id="referenceImagesContainer" class="flex items-center gap-2 flex-wrap"></div>
+                            <input type="file" id="referenceImageInput" accept="image/*" class="hidden"
+                                onchange="handleImageUpload(event)" multiple>
+                            <button type="button" onclick="document.getElementById('referenceImageInput').click()"
+                                class="w-8 h-8 flex items-center justify-center bg-stone-700/60 hover:bg-stone-700 text-stone-400 hover:text-amber-500 rounded-lg transition border border-stone-600/50"
+                                title="添加参考图片">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                            </button>
+                            <!-- 魔术棒优化按钮 -->
+                            <button id="optimizePromptBtn" type="button" onclick="optimizePrompt()"
+                                class="w-8 h-8 flex items-center justify-center bg-stone-700/60 hover:bg-stone-700 text-stone-400 hover:text-amber-500 rounded-lg transition border border-stone-600/50"
+                                title="✨ AI 优化提示词">
+                                <span id="optimizeBtnIcon">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                        </path>
+                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                     </svg>
-                                </button>
-                                <!-- 魔术棒优化按钮（与图片按钮并排）-->
-                                <button id="optimizePromptBtn" type="button" onclick="optimizePrompt()"
-                                    class="w-9 h-9 flex items-center justify-center bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-amber-500 rounded-lg transition border border-stone-700"
-                                    title="✨ AI 优化提示词">
-                                    <span id="optimizeBtnIcon">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-
-                            <!-- 字符计数（右下角） -->
-                            <div class="absolute bottom-4 right-4 text-stone-600 text-xs font-mono">
-                                <span id="charCount">0</span><span class="text-stone-700">/1000</span>
-                            </div>
+                                </span>
+                            </button>
+                            <span class="ml-auto text-stone-600 text-xs font-mono"><span id="charCount">0</span><span class="text-stone-700">/1000</span></span>
                         </div>
                     </div>
 
@@ -705,24 +703,24 @@
 
                     <!-- 模型选择 -->
                     <div class="flex flex-col">
-                        <label
-                            class="text-stone-400 text-xs font-medium mb-2 block uppercase tracking-wider">选择AI模型</label>
+                        <div class="flex items-center justify-between mb-2">
+                            <label
+                                class="text-stone-400 text-xs font-medium block uppercase tracking-wider">选择AI模型</label>
+                            <button id="selectAllModelsBtn" type="button" onclick="toggleSelectAllModels()"
+                                class="text-xs bg-stone-800/70 hover:bg-stone-700 text-stone-400 hover:text-amber-500 font-medium px-2.5 py-1 rounded-lg transition border border-stone-700/50">
+                                全选
+                            </button>
+                        </div>
                         <div class="overflow-y-auto scrollbar-styled pr-1 space-y-2 min-h-[80px]"
                             id="modelSelectionList">
                             <!-- 模型列表将在这里动态生成 -->
                         </div>
                     </div>
 
-                    <!-- 费用+生成按钮：内容短时跟随列表，内容长时固定底部 -->
+                    <!-- 生成按钮 -->
                     <div id="generateBtnSection" class="mt-3">
-                        <div class="bg-stone-800/50 p-4 rounded-t-xl border border-stone-700/50 border-b-0">
-                            <div class="flex justify-between items-center">
-                                <span class="text-stone-400 text-sm">预计成本</span>
-                                <span id="costEstimate" class="text-amber-500 font-bold font-mono text-lg">$0.00</span>
-                            </div>
-                        </div>
                         <button onclick="startGeneration()" id="generateBtn"
-                            class="w-full btn-primary py-4 rounded-b-xl rounded-t-none text-base flex items-center justify-center gap-2">
+                            class="w-full btn-primary py-4 rounded-xl text-base flex items-center justify-center gap-2">
                             <span>开始生成</span>
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -758,9 +756,6 @@
                             </span>
                             生成结果
                         </h2>
-                        <span id="totalCostDisplay" class="text-sm text-stone-500 hidden">
-                            本次花费 <span id="totalCostValue" class="font-mono text-amber-500">$0.00</span>
-                        </span>
                     </div>
                     <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-5 flex-1 items-start">
                         <!-- Empty State -->
@@ -813,25 +808,18 @@
                 </button>
             </div>
 
-            <!-- API Key 配置 -->
+            <!-- API Provider 信息 -->
             <div class="mb-6">
-                <label class="text-stone-400 text-xs font-medium mb-3 block uppercase tracking-wider">OpenRouter API
-                    Key（可选）</label>
-                <div class="tip-box-info mb-3">
+                <label class="text-stone-400 text-xs font-medium mb-3 block uppercase tracking-wider">API 提供商</label>
+                <div class="tip-box-info">
                     <p class="text-blue-400 text-xs flex items-start gap-2">
                         <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span>如果不填写，将使用服务器端的公用 API Key。填写你自己的 API Key 后，将优先使用你的 Key。</span>
+                        <span>使用 FitAI 公司代理，所有模型免费，无需配置 API Key</span>
                     </p>
                 </div>
-                <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..."
-                    class="w-full p-3 rounded-xl input-field text-sm">
-                <p class="text-stone-500 text-xs mt-2">
-                    获取 API Key：<a href="https://openrouter.ai/keys" target="_blank"
-                        class="text-amber-500 hover:text-amber-400 hover:underline">openrouter.ai/keys</a>
-                </p>
             </div>
 
             <div class="divider my-6"></div>
@@ -858,19 +846,6 @@
                 <div id="settingsModelList" class="space-y-2 max-h-80 overflow-y-auto scrollbar-styled pr-1">
                     <!-- 模型列表将在这里动态生成 -->
                 </div>
-            </div>
-
-            <div class="divider my-6"></div>
-
-            <!-- Debug Mode -->
-            <div class="mb-6">
-                <label class="flex items-center cursor-pointer group">
-                    <input type="checkbox" id="debugMode" class="mr-3">
-                    <span class="text-stone-300 text-sm font-medium group-hover:text-stone-100 transition">启用调试模式</span>
-                </label>
-                <p class="text-stone-500 text-xs mt-2 ml-7">
-                    开启后会在控制台显示详细的 API 请求和响应信息
-                </p>
             </div>
 
             <div class="flex gap-3 mt-8">
@@ -906,30 +881,6 @@
                         </path>
                     </svg>
                 </button>
-            </div>
-
-            <!-- 花费明细统计 -->
-            <div id="costStatistics" class="mb-5 bg-stone-800/50 rounded-xl p-4 border border-stone-700/50 hidden">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-semibold text-stone-200 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                            </path>
-                        </svg>
-                        花费统计
-                    </h3>
-                    <button id="toggleCostStats" onclick="toggleCostStatistics()"
-                        class="text-xs bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium px-3 py-1.5 rounded-lg transition">
-                        <span id="toggleCostStatsText">展开详情</span>
-                    </button>
-                </div>
-                <div id="costStatsSummary" class="text-sm text-stone-300">
-                    <!-- 默认显示的摘要信息 -->
-                </div>
-                <div id="costStatsDetails" class="space-y-2 text-sm hidden mt-4 pt-4 border-t border-stone-700/50">
-                    <!-- 详细统计内容将在这里动态加载 -->
-                </div>
             </div>
 
             <!-- 搜索和筛选 -->
@@ -1091,34 +1042,18 @@
             };
         }
 
-        // OpenRouter API 配置
-        const OPENROUTER_API_BASE = 'https://openrouter.ai/api/v1';
-        const OPENROUTER_PROXY_URL = '/api/openrouter'; // 服务器端代理 URL
+        // API 配置 - 统一使用 FitAI 公司代理
+        const FITAI_PROXY_URL = '/api/fitai';
 
-
-        // 获取 API 配置（URL 和 headers）
-        function getApiConfig() {
-            const userApiKey = localStorage.getItem('openrouter_api_key');
-            if (userApiKey && userApiKey.trim()) {
-                // 使用用户自定义 API Key，直接调用 OpenRouter API
-                return {
-                    url: `${OPENROUTER_API_BASE}/chat/completions`,
-                    headers: {
-                        'Authorization': `Bearer ${userApiKey.trim()}`,
-                        'Content-Type': 'application/json',
-                        'HTTP-Referer': window.location.origin,
-                        'X-Title': 'AI UI Comparator'
-                    }
-                };
-            } else {
-                // 使用服务器端代理
-                return {
-                    url: OPENROUTER_PROXY_URL,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                };
-            }
+        // 获取 API 配置（统一使用 FitAI）
+        function getApiConfig(modelId) {
+            return {
+                url: FITAI_PROXY_URL,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                provider: 'fitai'
+            };
         }
 
         /**
@@ -1133,63 +1068,105 @@
          */
         const MODEL_CONFIGS = {
 
-            // ────────── 🖼️ 图片直出类 ──────────
+            // ────────── 🏢 FitAI 公司代理模型（全部免费）──────────
 
-            'gemini-flash': {
-                name: 'Gemini 2.5 Flash Image',
-                model: 'google/gemini-2.5-flash-image',
-                cost: 0.067,   // ~$0.067/张@1024px（输入$0.30/M + 输出$2.50/M）
-                type: 'image'
+            // 两阶段生成：文字模型生成描述 → 图片模型出图
+            'fitai-flash-to-pro': {
+                name: 'Flash → Pro',
+                desc: '两阶段出图，读图',
+                model: 'gemini-3.1-flash-lite',
+                imageModel: 'gemini-3-pro-image',
+                cost: 0,
+                type: 'text-to-image-desc',
+                timeout: 120000,
+                provider: 'fitai'
             },
-            'gemini-3.1-flash': {
-                name: 'Gemini 3.1 Flash Image 🆕',
-                model: 'google/gemini-3.1-flash-image-preview',
-                cost: 0.045,   // ~$0.045/张（更快更省）
-                type: 'image'
-            },
-            'gemini-pro': {
-                name: 'Gemini 3 Pro Image',
-                model: 'google/gemini-3-pro-image-preview',
-                cost: 0.134,   // ~$0.134/张@1024px（输入$2.00/M + 输出$120/M）
-                type: 'image'
+            'fitai-claude-to-pro': {
+                name: 'Claude → Pro',
+                desc: '两阶段出图，读图，代码强',
+                model: 'claude-sonnet-4-6',
+                imageModel: 'gemini-3-pro-image',
+                cost: 0,
+                type: 'text-to-image-desc',
+                timeout: 150000,
+                provider: 'fitai'
             },
 
-            // ────────── 💻 代码生成类 ──────────
+            // 图片直出类（输出图片）
+            'fitai-gemini-3.1-flash-image': {
+                name: 'Gemini 3.1 Flash',
+                desc: '直接出图，读图，快',
+                model: 'gemini-3.1-flash-image',
+                cost: 0,
+                type: 'image',
+                timeout: 90000,
+                provider: 'fitai'
+            },
+            'fitai-gemini-3-pro-image': {
+                name: 'Gemini 3 Pro',
+                desc: '直接出图，读图，质量高',
+                model: 'gemini-3-pro-image',
+                cost: 0,
+                type: 'image',
+                timeout: 90000,
+                provider: 'fitai'
+            },
 
-            'deepseek-v3': {
-                name: 'DeepSeek V3.1 (代码)',
-                model: 'deepseek/deepseek-chat-v3.1',
-                cost: 0.01,    // 输入$0.20/M + 输出$0.80/M
+            // 代码生成类（生成 HTML/CSS）
+            'fitai-gemini-3.1-pro': {
+                name: 'Gemini 3.1 Pro',
+                desc: '生成代码，读图，960K上下文',
+                model: 'gemini-3.1-pro',
+                cost: 0,
                 type: 'code',
-                timeout: 130000
+                timeout: 120000,
+                provider: 'fitai'
             },
-            'qwen-coder': {
-                name: 'Qwen3 Coder 🆕',
-                model: 'qwen/qwen3-coder',
-                cost: 0.01,    // 输入$0.22/M + 输出$1.00/M
+            'fitai-gemini-3.1-flash-lite': {
+                name: 'Gemini 3.1 Flash Lite',
+                desc: '生成代码，读图，快速',
+                model: 'gemini-3.1-flash-lite',
+                cost: 0,
                 type: 'code',
-                timeout: 110000
+                timeout: 90000,
+                provider: 'fitai'
             },
-            'grok-fast': {
-                name: 'Grok 4.1 Fast (代码)',
-                model: 'x-ai/grok-4.1-fast',
-                cost: 0.01,    // 输入$0.20/M + 输出$0.50/M
+            'fitai-claude-sonnet': {
+                name: 'Claude Sonnet 4.6',
+                desc: '生成代码，读图，代码能力强',
+                model: 'claude-sonnet-4-6',
+                cost: 0,
                 type: 'code',
-                timeout: 100000
+                timeout: 130000,
+                provider: 'fitai'
             },
-            'claude-haiku-4.5': {
-                name: 'Claude Haiku 4.5 (代码)',
-                model: 'anthropic/claude-haiku-4.5',
-                cost: 0.03,    // 输入$1.00/M + 输出$5.00/M
+            'fitai-claude-opus': {
+                name: 'Claude Opus 4.6',
+                desc: '生成代码，读图，最强模型',
+                model: 'claude-opus-4-6',
+                cost: 0,
                 type: 'code',
-                timeout: 90000
+                timeout: 150000,
+                provider: 'fitai'
             },
-            'claude-sonnet-4.6': {
-                name: 'Claude Sonnet 4.6 🆕',
-                model: 'anthropic/claude-sonnet-4.6',
-                cost: 0.08,    // 输入$3.00/M + 输出$15.00/M
+            'fitai-kimi': {
+                name: 'Kimi K2.5',
+                desc: '生成代码，读图，深度思考',
+                model: 'kimi-k2.5',
+                cost: 0,
                 type: 'code',
-                timeout: 130000
+                timeout: 100000,
+                provider: 'fitai'
+            },
+            'fitai-gpt-5.4': {
+                name: 'GPT 5.4',
+                desc: '生成代码，896K上下文，不读图',
+                model: 'gpt-5.4',
+                cost: 0,
+                type: 'code',
+                timeout: 120000,
+                provider: 'fitai',
+                noImageInput: true
             },
         };
 
@@ -1299,14 +1276,18 @@
 
             container.innerHTML = '';
 
-            // 推荐的 6 个默认模型（精选，2026-03 更新）
+            // 全部 FitAI 模型（2026-04）
             const defaultMainPageModels = [
-                'gemini-flash',      // Gemini 2.5 Flash Image
-                'gemini-3.1-flash',  // Gemini 3.1 Flash Image（新）
-                'deepseek-v3',       // DeepSeek V3.1（极性价比）
-                'qwen-coder',        // Qwen3 Coder（新）
-                'grok-fast',         // Grok 4.1 Fast
-                'claude-haiku-4.5',  // Claude Haiku 4.5
+                'fitai-flash-to-pro',           // 两阶段
+                'fitai-claude-to-pro',          // 两阶段
+                'fitai-gemini-3.1-flash-image', // 图片直出
+                'fitai-gemini-3-pro-image',     // 图片直出
+                'fitai-gemini-3.1-pro',         // 代码生成
+                'fitai-gemini-3.1-flash-lite',  // 代码生成
+                'fitai-claude-sonnet',          // 代码生成
+                'fitai-claude-opus',            // 代码生成
+                'fitai-kimi',                   // 代码生成
+                'fitai-gpt-5.4',                // 代码生成
             ];
 
             // 获取保存的选中模型
@@ -1341,22 +1322,19 @@
                 // 检查是否已选中
                 const isChecked = defaultSelected.includes(model.key);
 
-                const costDisplay = model.cost === 0
-                    ? '<span class="badge badge-mint text-[10px]">FREE</span>'
-                    : `<span class="text-stone-500 text-xs font-mono">$${model.cost.toFixed(2)}</span>`;
+                const typeEmoji = model.type === 'code' ? '💻' : model.type === 'image' ? '🖼️' : '📝';
 
-                const typeDisplay = model.type === 'code'
-                    ? '<span class="text-blue-400 text-xs">代码</span>'
-                    : model.type === 'image'
-                        ? '<span class="text-purple-400 text-xs">图片</span>'
-                        : '<span class="text-amber-400 text-xs">描述</span>';
+                const descDisplay = model.desc
+                    ? `<span class="text-stone-500 text-xs ml-2">${model.desc}</span>`
+                    : '';
 
                 label.innerHTML = `
                     <input type="checkbox" id="settings-model-${model.key}" class="mr-3" ${isChecked ? 'checked' : ''}>
-                <span class="text-stone-200 font-medium flex-1 text-sm group-hover:text-stone-100 transition">${model.name}</span>
-                    ${typeDisplay}
-                    <span class="mx-2 text-stone-700">·</span>
-                    ${costDisplay}
+                    <span class="mr-2 flex-shrink-0">${typeEmoji}</span>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-stone-200 font-medium text-sm group-hover:text-stone-100 transition">${model.name}</span>
+                        ${descDisplay}
+                    </div>
                 `;
 
                 container.appendChild(label);
@@ -1370,14 +1348,18 @@
 
             container.innerHTML = '';
 
-            // 主页面默认显示的模型列表（精选 6 个，2026-03 更新）
+            // 主页面默认显示的模型列表（按效果好且快速优先排序）
             const defaultMainPageModels = [
-                'gemini-flash',      // Gemini 2.5 Flash Image
-                'gemini-3.1-flash',  // Gemini 3.1 Flash Image（新）
-                'deepseek-v3',       // DeepSeek V3.1（极性价比）
-                'qwen-coder',        // Qwen3 Coder（新）
-                'grok-fast',         // Grok 4.1 Fast
-                'claude-haiku-4.5',  // Claude Haiku 4.5
+                'fitai-gemini-3.1-flash-image', // 图片直出，快
+                'fitai-gemini-3.1-flash-lite',  // 代码生成，快速
+                'fitai-claude-sonnet',          // 代码生成，代码能力强
+                'fitai-gpt-5.4',                // 代码生成，长上下文
+                'fitai-gemini-3-pro-image',     // 图片直出，质量高
+                'fitai-gemini-3.1-pro',         // 代码生成，960K上下文
+                'fitai-kimi',                   // 代码生成，深度思考
+                'fitai-claude-opus',            // 代码生成，最强
+                'fitai-flash-to-pro',           // 两阶段
+                'fitai-claude-to-pro',          // 两阶段
             ];
 
             // 获取设置中保存的勾选状态
@@ -1402,13 +1384,12 @@
             // 获取上次生成时的选择（如果有）
             const lastGenerationModels = JSON.parse(localStorage.getItem('last_generation_models') || '[]');
 
-            // 获取可用模型并排序（按价格从低到高）
+            // 获取可用模型，保持 availableModels 中的顺序（已按效果/速度排好）
             const sortedModels = availableModels
                 .map(key => ({
                     key: key,
                     ...MODEL_CONFIGS[key]
-                }))
-                .sort((a, b) => a.cost - b.cost);
+                }));
 
             // 确定默认勾选状态
             let defaultChecked = [];
@@ -1442,21 +1423,25 @@
                 // 默认勾选（全部勾选或使用上次选择）
                 const isChecked = defaultChecked.includes(model.key);
 
-                const costDisplay = model.cost === 0
-                    ? '<span class="text-emerald-400 text-[10px] font-semibold uppercase tracking-wider">Free</span>'
-                    : `<span class="text-stone-500 text-xs font-mono">$${model.cost.toFixed(2)}</span>`;
-
                 const typeIcon = model.type === 'code'
                     ? '<svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>'
                     : model.type === 'image'
                         ? '<svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>'
                         : '<svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
 
+                const typeEmoji = model.type === 'code' ? '💻' : model.type === 'image' ? '🖼️' : '📝';
+
+                const descDisplay = model.desc
+                    ? `<span class="text-stone-500 text-[11px] block">${model.desc}</span>`
+                    : '';
+
                 label.innerHTML = `
-                    <input type="checkbox" id="model-${model.key}" class="mr-2.5" ${isChecked ? 'checked' : ''}>
-                <span class="text-stone-300 font-medium flex-1 text-sm group-hover:text-stone-100 transition truncate">${model.name}</span>
-                    ${typeIcon}
-                    <span class="ml-2">${costDisplay}</span>
+                    <input type="checkbox" id="model-${model.key}" class="mr-2.5 flex-shrink-0 self-center" ${isChecked ? 'checked' : ''}>
+                    <span class="mr-1.5 flex-shrink-0" style="font-size:14px;line-height:1.4;align-self:flex-start;margin-top:2px;">${typeEmoji}</span>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-stone-300 font-medium text-sm group-hover:text-stone-100 transition">${model.name}</span>
+                        ${descDisplay}
+                    </div>
             `;
 
                 // 添加事件监听
@@ -1464,6 +1449,10 @@
                 checkbox.addEventListener('change', () => {
                     updateCostEstimate();
                     saveLastGenerationModels(); // 保存当前选择
+                    // 同步全选按钮文字
+                    const allCbs = document.querySelectorAll('#modelSelectionList input[type="checkbox"]');
+                    const btn = document.getElementById('selectAllModelsBtn');
+                    if (btn) btn.textContent = Array.from(allCbs).every(cb => cb.checked) ? '全不选' : '全选';
                 });
 
                 container.appendChild(label);
@@ -1471,8 +1460,24 @@
 
             // 更新成本估算
             updateCostEstimate();
+            // 同步全选按钮初始文字
+            const allCbs = container.querySelectorAll('input[type="checkbox"]');
+            const selectAllBtn = document.getElementById('selectAllModelsBtn');
+            if (selectAllBtn) selectAllBtn.textContent = Array.from(allCbs).every(cb => cb.checked) ? '全不选' : '全选';
             // 调整模型列表高度
             adjustModelListHeight();
+        }
+
+        // 全选 / 全不选切换
+        function toggleSelectAllModels() {
+            const container = document.getElementById('modelSelectionList');
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => { cb.checked = !allChecked; });
+            const btn = document.getElementById('selectAllModelsBtn');
+            if (btn) btn.textContent = allChecked ? '全选' : '全不选';
+            updateCostEstimate();
+            saveLastGenerationModels();
         }
 
         // 保存上次生成时的模型选择
@@ -1630,16 +1635,9 @@
             }
         }
 
-        // 成本估算
+        // 成本估算（保留函数，不再展示价格）
         function updateCostEstimate() {
-            let total = 0;
-            for (let key in MODEL_CONFIGS) {
-                const checkbox = document.getElementById(`model-${key}`);
-                if (checkbox && checkbox.checked) {
-                    total += MODEL_CONFIGS[key].cost;
-                }
-            }
-            document.getElementById('costEstimate').textContent = `$${total.toFixed(2)}`;
+            // 所有模型均免费，无需计算和展示价格
         }
 
         // 监听模型选择变化
@@ -1651,9 +1649,6 @@
         function showSettings() {
             document.getElementById('settingsModal').classList.remove('hidden');
             document.getElementById('settingsModal').classList.add('flex');
-            // 加载保存的 API Key
-            const savedApiKey = localStorage.getItem('openrouter_api_key') || '';
-            document.getElementById('apiKeyInput').value = savedApiKey;
             loadSettingsModelList(); // 加载设置中的模型列表
         }
 
@@ -1667,44 +1662,36 @@
                 return;
             }
 
-            // 默认主页面显示的模型列表（推荐的8个模型）
+            // 默认主页面显示的模型列表（FitAI 全部 10 个）
             const defaultMainPageModels = [
-                'gemini-flash',      // Gemini 2.5 Flash Image (免费)
-                'gemini-pro',        // Gemini 3 Pro Image (免费)
-                'claude',            // Claude 3.5 (描述)
-                'grok-fast',         // Grok 4.1 Fast (代码)
-                'claude-haiku-4.5',  // Claude Haiku 4.5 (代码)
-                'deepseek-code',     // DeepSeek Coder (代码)
-                'qwen-coder',        // Qwen 2.5 (代码)
-                'deepseek-v3'        // DeepSeek V3 (代码)
+                'fitai-flash-to-pro',
+                'fitai-claude-to-pro',
+                'fitai-gemini-3.1-flash-image',
+                'fitai-gemini-3-pro-image',
+                'fitai-gemini-3.1-pro',
+                'fitai-gemini-3.1-flash-lite',
+                'fitai-claude-sonnet',
+                'fitai-claude-opus',
+                'fitai-kimi',
+                'fitai-gpt-5.4'
             ];
 
-            // 保存默认选择（保存推荐的8个模型）
+            // 保存默认选择
             localStorage.setItem('selected_models', JSON.stringify(defaultMainPageModels));
 
             // 清除上次生成时的选择
             localStorage.removeItem('last_generation_models');
 
-            // 更新设置页面的模型列表显示（会默认选中这6个）
+            // 更新设置页面的模型列表显示
             loadSettingsModelList();
 
-            // 更新主界面显示（会显示这5个模型，默认只勾选免费模型）
+            // 更新主界面显示
             loadModelSelectionList();
 
-            alert('✅ 已恢复默认模型选择\n\n主页面将显示推荐的6个模型，默认勾选免费模型');
+            alert('✅ 已恢复默认模型选择\n\n主页面将显示推荐的 6 个 FitAI 模型');
         }
 
         function saveSettings() {
-            // 保存 API Key（可选）
-            const apiKeyInput = document.getElementById('apiKeyInput');
-            const apiKey = apiKeyInput.value.trim();
-            if (apiKey) {
-                localStorage.setItem('openrouter_api_key', apiKey);
-            } else {
-                // 如果清空，移除保存的 API Key，使用服务器端公用 Key
-                localStorage.removeItem('openrouter_api_key');
-            }
-
             // 保存调试模式设置
             const debugCheckbox = document.getElementById('debugMode');
             debugMode = debugCheckbox.checked;
@@ -1723,16 +1710,18 @@
                 return;
             }
 
-            // 默认的8个模型
+            // 默认的 FitAI 模型（全部 10 个）
             const defaultMainPageModels = [
-                'gemini-flash',
-                'gemini-pro',
-                'claude',
-                'grok-fast',
-                'claude-haiku-4.5',
-                'deepseek-code',
-                'qwen-coder',
-                'deepseek-v3'
+                'fitai-flash-to-pro',
+                'fitai-claude-to-pro',
+                'fitai-gemini-3.1-flash-image',
+                'fitai-gemini-3-pro-image',
+                'fitai-gemini-3.1-pro',
+                'fitai-gemini-3.1-flash-lite',
+                'fitai-claude-sonnet',
+                'fitai-claude-opus',
+                'fitai-kimi',
+                'fitai-gpt-5.4'
             ];
 
             // 判断是否与默认8个完全相同
@@ -1791,12 +1780,14 @@
 5. 补充关键的交互状态（选中态、空状态等）
 6. 输出长度 150-300 字，纯文字，不要 markdown 格式，不要解释说明，只输出扩写后的需求描述`;
 
-                const apiConfig = getApiConfig();
+                // 使用当前 provider 决定优化提示词的模型
+                const optimizeModel = getCurrentProvider() === 'fitai' ? 'gemini-3-flash' : 'deepseek/deepseek-chat-v3.1';
+                const apiConfig = getApiConfig(optimizeModel);
                 const response = await fetch(apiConfig.url, {
                     method: 'POST',
                     headers: apiConfig.headers,
                     body: JSON.stringify({
-                        model: 'deepseek/deepseek-chat-v3.1',
+                        model: optimizeModel,
                         messages: [
                             { role: 'system', content: systemPrompt },
                             { role: 'user', content: rawPrompt }
@@ -1854,6 +1845,24 @@
             if (selectedModels.length === 0) {
                 alert('⚠️ 请至少选择一个模型');
                 return;
+            }
+
+            // 检查：如果上传了参考图片，但选中了不支持图片的模型，给出提示
+            if (referenceImages.length > 0) {
+                const noImageModels = selectedModels.filter(key => {
+                    const config = MODEL_CONFIGS[key];
+                    return config && config.noImageInput;
+                });
+
+                if (noImageModels.length > 0) {
+                    const modelNames = noImageModels.map(key => MODEL_CONFIGS[key].name).join('、');
+                    const continueGen = confirm(
+                        `⚠️ 你上传了参考图片，但以下模型不支持图片输入：\n\n${modelNames}\n\n这些模型将忽略参考图片，只根据文字描述生成。\n\n是否继续？`
+                    );
+                    if (!continueGen) {
+                        return;
+                    }
+                }
             }
 
             // 保存当前选择，用于下次加载时恢复
@@ -2137,8 +2146,8 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                     } else {
                         codeContent = codeResult;
                     }
-                } else {
-                    // Claude：生成描述后用免费的Gemini生成图
+                } else if (config.type === 'text-to-image-desc') {
+                    // 两阶段生成：先用文字模型生成描述，再用图片模型生成图
                     const descResult = await generateDescription(config.model, prompt);
                     let description;
                     if (typeof descResult === 'object' && descResult.description) {
@@ -2148,10 +2157,13 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                         description = descResult;
                     }
 
-                    const imageResult = await generateImage('google/gemini-2.5-flash-image', description, platform);
+                    // 使用配置中指定的图片模型，默认使用 FitAI 的 gemini-3-pro-image
+                    const imageModel = config.imageModel || 'gemini-3-pro-image';
+                    debugLog('📝 描述生成完成，使用图片模型:', imageModel);
+
+                    const imageResult = await generateImage(imageModel, description, platform);
                     if (typeof imageResult === 'object' && imageResult.imageUrl) {
                         imageUrl = imageResult.imageUrl;
-                        // 累加成本（描述 + 图片生成）
                         if (imageResult.actualCost !== null) {
                             actualCost = (actualCost || 0) + imageResult.actualCost;
                         }
@@ -2217,10 +2229,13 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 ? 'mobile app (iOS/Android)'
                 : 'desktop web application';
 
+            // 检查模型是否支持图片输入（GPT 系列不支持）
+            const modelSupportsImage = !model.startsWith('gpt-');
+
             // 根据模型类型构建不同的请求体
-            // 如果有关参考图片，使用多模态格式
+            // 如果有参考图片且模型支持图片，使用多模态格式
             let content;
-            if (referenceImages.length > 0) {
+            if (referenceImages.length > 0 && modelSupportsImage) {
                 // 多模态格式：文本 + 多张图片
                 content = [
                     {
@@ -2235,6 +2250,10 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                     }))
                 ];
                 debugLog(`📷 包含 ${referenceImages.length} 张参考图片`);
+            } else if (referenceImages.length > 0 && !modelSupportsImage) {
+                // 模型不支持图片，只发送文本
+                content = prompt;
+                debugLog(`⚠️ ${model} 不支持图片输入，已忽略 ${referenceImages.length} 张参考图片`);
             } else {
                 // 纯文本格式
                 content = prompt;
@@ -2305,7 +2324,8 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
             debugLog('📤 Request body:', JSON.stringify(requestBody, null, 2));
 
-            const apiConfig = getApiConfig();
+            const apiConfig = getApiConfig(model);
+            debugLog('🔌 Using provider:', apiConfig.provider);
             const response = await fetch(apiConfig.url, {
                 method: 'POST',
                 headers: apiConfig.headers,
@@ -2682,7 +2702,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
         }
 
         async function generateDescription(model, prompt) {
-            const apiConfig = getApiConfig();
+            const apiConfig = getApiConfig(model);
             const response = await fetch(apiConfig.url, {
                 method: 'POST',
                 headers: apiConfig.headers,
@@ -2843,9 +2863,12 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 debugLog('ℹ️ 未添加中文约束（检测到用户要求使用其他语言）');
             }
 
+            // 检查模型是否支持图片输入（GPT 系列不支持）
+            const modelSupportsImage = !model.startsWith('gpt-');
+
             // 构建消息内容
             let content;
-            if (referenceImages.length > 0) {
+            if (referenceImages.length > 0 && modelSupportsImage) {
                 // 包含参考图片
                 content = [
                     {
@@ -2859,6 +2882,10 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                         }
                     }))
                 ];
+            } else if (referenceImages.length > 0 && !modelSupportsImage) {
+                // 模型不支持图片，只发送文本
+                content = codePrompt;
+                debugLog(`⚠️ ${model} 不支持图片输入，已忽略参考图片`);
             } else {
                 content = codePrompt;
             }
@@ -2889,7 +2916,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
                 for (let attempt = 0; attempt <= maxRetries; attempt++) {
                     try {
-                        const apiConfig = getApiConfig();
+                        const apiConfig = getApiConfig(requestBody.model);
                         const response = await fetch(apiConfig.url, {
                             method: 'POST',
                             headers: apiConfig.headers,
@@ -5066,20 +5093,37 @@ Avoid: 3D elements, realistic photos, cartoon style`;
         function showToast(message, duration = 2000) {
             // 创建 toast 元素
             const toast = document.createElement('div');
-            toast.className = 'fixed bottom-6 right-6 bg-stone-800 text-stone-100 px-5 py-3 rounded-xl shadow-xl border border-stone-700/50 z-50 transition-all opacity-0 translate-y-2 text-sm font-medium';
+            toast.className = 'fixed z-[9999] transition-all opacity-0';
+            toast.style.cssText = `
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, calc(-50% + 12px));
+                background: rgba(28,25,23,0.95);
+                border: 1px solid rgba(245,158,11,0.35);
+                color: #fafaf9;
+                padding: 14px 28px;
+                border-radius: 16px;
+                font-size: 15px;
+                font-weight: 600;
+                box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,158,11,0.15);
+                white-space: nowrap;
+                pointer-events: none;
+                backdrop-filter: blur(12px);
+                letter-spacing: 0.01em;
+            `;
             toast.textContent = message;
             document.body.appendChild(toast);
 
             // 显示动画
             setTimeout(() => {
                 toast.style.opacity = '1';
-                toast.style.transform = 'translateY(0)';
+                toast.style.transform = 'translate(-50%, -50%)';
             }, 10);
 
             // 自动移除
             setTimeout(() => {
                 toast.style.opacity = '0';
-                toast.style.transform = 'translateY(8px)';
+                toast.style.transform = 'translate(-50%, calc(-50% - 8px))';
                 setTimeout(() => {
                     if (document.body.contains(toast)) {
                         document.body.removeChild(toast);
