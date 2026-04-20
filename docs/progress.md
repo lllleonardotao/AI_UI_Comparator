@@ -43,3 +43,24 @@
 - `showToast()` 使用 inline style 确保 Tailwind purge 不影响动态定位
 - `updateCostEstimate()` 保留函数体但内容为空（防止其他调用处报错）
 
+
+
+## 2026-04-20
+
+## 当前状态
+- 优化阶段 — 核心功能稳定，正在完善用户体验和视觉一致性
+
+## 已完成
+- 浅色/深色主题切换功能上线（基于 Claude Design Style 设计规范）
+- 主题切换按钮集成到 header，支持 localStorage 持久化
+- 全站 Tailwind 颜色覆盖规则完成，浅色模式使用暖石色系
+- 主要弹窗（设置/历史/图片详情）浅色模式适配完成
+
+## 当前问题 / 卡点
+- 部分 inline style 需要 !important 覆盖，维护成本较高
+- 图片详情面板的代码分析区域样式依赖运行时 JS 生成，主题切换后需刷新
+
+## 下一步
+- 验证所有弹窗/卡片在两种主题下的视觉一致性
+- 测试系统主题偏好自动检测（prefers-color-scheme）
+- 考虑将 inline style 改为 CSS class，减少 !important 依赖

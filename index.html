@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -60,7 +60,41 @@
            - Refined typography with generous spacing
         ═══════════════════════════════════════════════════════════ */
 
+        /* ═══════════════════════════════════════════════════════════
+           THEME SYSTEM: Light & Dark Mode
+           Based on Claude Design Style (warm simplicity)
+        ═══════════════════════════════════════════════════════════ */
+
         :root {
+            /* Light Mode (default variables) - Warm Cream Palette */
+            --surface: #faf8f3;
+            --surface-raised: #ffffff;
+            --surface-overlay: #f3f1eb;
+            --surface-item: #f8f6f1;
+            --border-subtle: rgba(120, 113, 108, 0.12);
+            --border-default: rgba(120, 113, 108, 0.2);
+            --text-primary: #1c1917;
+            --text-secondary: #57534e;
+            --text-muted: #a8a29e;
+            --accent: #d97706;
+            --accent-hover: #b45309;
+            --accent-glow: rgba(217, 119, 6, 0.15);
+            --mint: #059669;
+            --error: #dc2626;
+            /* Scrollbar colors */
+            --scrollbar-track: #f3f1eb;
+            --scrollbar-thumb: #d6d3cc;
+            --scrollbar-thumb-hover: #a8a29e;
+            /* Glass effect */
+            --glass-bg: rgba(255, 253, 250, 0.85);
+            --glass-border: rgba(120, 113, 108, 0.15);
+            --glass-shadow: rgba(120, 113, 108, 0.08);
+            /* Noise overlay opacity */
+            --noise-opacity: 0.012;
+        }
+
+        .dark {
+            /* Dark Mode */
             --surface: #0c0a09;
             --surface-raised: #1c1917;
             --surface-overlay: #292524;
@@ -74,19 +108,41 @@
             --accent-glow: rgba(245, 158, 11, 0.25);
             --mint: #34d399;
             --error: #f87171;
+            /* Scrollbar colors */
+            --scrollbar-track: #0c0a09;
+            --scrollbar-thumb: #292524;
+            --scrollbar-thumb-hover: #44403c;
+            /* Glass effect */
+            --glass-bg: rgba(28, 25, 23, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            /* Noise overlay opacity */
+            --noise-opacity: 0.02;
         }
 
         /* 基础样式 */
         body {
             background: var(--surface);
-            background-image:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245, 158, 11, 0.08), transparent),
-                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(52, 211, 153, 0.05), transparent);
             height: 100vh;
             overflow: hidden;
             color: var(--text-primary);
             font-feature-settings: 'cv11', 'ss01';
             letter-spacing: -0.01em;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* 深色模式渐变背景 */
+        .dark body {
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245, 158, 11, 0.08), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(52, 211, 153, 0.05), transparent);
+        }
+
+        /* 浅色模式渐变背景 - 温暖的米色调 */
+        html:not(.dark) body {
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(217, 119, 6, 0.04), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(120, 113, 108, 0.03), transparent);
         }
 
         /* 噪点纹理叠加 */
@@ -95,7 +151,7 @@
             position: fixed;
             inset: 0;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-            opacity: 0.02;
+            opacity: var(--noise-opacity);
             pointer-events: none;
             z-index: 1000;
         }
@@ -137,27 +193,39 @@
             opacity: 0.6;
         }
 
-        /* 玻璃态效果 - 深色版本 */
+        /* 玻璃态效果 */
         .glass {
-            background: rgba(28, 25, 23, 0.8);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 6px -1px var(--glass-shadow), 0 2px 4px -2px var(--glass-shadow);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dark .glass {
             box-shadow:
                 0 4px 6px -1px rgba(0, 0, 0, 0.3),
                 0 2px 4px -2px rgba(0, 0, 0, 0.2),
                 inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
         }
 
+        html:not(.dark) .glass {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(231, 229, 223, 0.8);
+            box-shadow: 0 4px 12px -2px rgba(120, 113, 108, 0.08);
+        }
+
         .glass-dark {
-            background: rgba(41, 37, 36, 0.6);
+            background: var(--surface-overlay);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-subtle);
+            opacity: 0.9;
         }
 
         .glass-dark:hover {
-            background: rgba(41, 37, 36, 0.8);
+            opacity: 1;
             border-color: var(--border-default);
         }
 
@@ -211,7 +279,7 @@
         }
 
         .btn-secondary:hover {
-            background: rgba(41, 37, 36, 0.9);
+            background: var(--surface-raised);
             border-color: var(--accent);
             color: var(--accent);
         }
@@ -232,6 +300,17 @@
             outline: none;
             border-color: var(--accent);
             box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* 浅色模式输入框优化 */
+        html:not(.dark) .input-field {
+            background: #ffffff;
+            border-color: rgba(231, 229, 223, 0.9);
+        }
+
+        html:not(.dark) .input-field:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
         }
 
         /* 加载动画 - 更优雅的版本 */
@@ -354,35 +433,35 @@
             border: 1px solid rgba(248, 113, 113, 0.2);
         }
 
-        /* 全局滚动条：统一暗色设计规范 */
+        /* 全局滚动条：自适应主题 */
         *::-webkit-scrollbar {
             width: 5px;
             height: 5px;
         }
 
         *::-webkit-scrollbar-track {
-            background: #0c0a09;
+            background: var(--scrollbar-track);
             border-radius: 4px;
         }
 
         *::-webkit-scrollbar-thumb {
-            background: #292524;
+            background: var(--scrollbar-thumb);
             border-radius: 4px;
-            border: 1px solid #1c1917;
+            border: 1px solid var(--surface-raised);
         }
 
         *::-webkit-scrollbar-thumb:hover {
-            background: #44403c;
+            background: var(--scrollbar-thumb-hover);
         }
 
         *::-webkit-scrollbar-corner {
-            background: #0c0a09;
+            background: var(--scrollbar-track);
         }
 
         /* Firefox 兼容 */
         * {
             scrollbar-width: thin;
-            scrollbar-color: #292524 #0c0a09;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
         }
 
         /* 保留 .scrollbar-styled 兼容原有标注 */
@@ -401,21 +480,21 @@
             scrollbar-width: none;
         }
 
-        /* 暗色滚动条（用于弹窗/iframe容器） */
+        /* 强调滚动条（用于弹窗/iframe容器） */
         .scrollbar-dark::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
         .scrollbar-dark::-webkit-scrollbar-track {
-            background: #1c1917;
+            background: var(--surface-raised);
             border-radius: 4px;
         }
         .scrollbar-dark::-webkit-scrollbar-thumb {
-            background: #44403c;
+            background: var(--scrollbar-thumb-hover);
             border-radius: 4px;
         }
         .scrollbar-dark::-webkit-scrollbar-thumb:hover {
-            background: #f59e0b;
+            background: var(--accent);
         }
 
         /* 选择框样式 */
@@ -462,6 +541,21 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
+        /* 浅色模式复选框优化 */
+        html:not(.dark) input[type="checkbox"] {
+            background: #ffffff;
+            border-color: rgba(168, 162, 158, 0.4);
+        }
+
+        html:not(.dark) input[type="checkbox"]:checked {
+            background: #f59e0b;
+            border-color: #f59e0b;
+        }
+
+        html:not(.dark) input[type="checkbox"]:checked::after {
+            border-color: #451a03;
+        }
+
         /* 单选框自定义样式 */
         input[type="radio"] {
             appearance: none;
@@ -495,6 +589,12 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
+        /* 浅色模式单选框优化 */
+        html:not(.dark) input[type="radio"] {
+            background: #ffffff;
+            border-color: rgba(168, 162, 158, 0.5);
+        }
+
         /* 模态框背景动画 */
         .modal-backdrop {
             animation: fade-in 0.2s ease;
@@ -518,6 +618,12 @@
             background-clip: text;
         }
 
+        html:not(.dark) .text-gradient {
+            background: linear-gradient(135deg, #b45309 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
         /* 分隔线 */
         .divider {
             height: 1px;
@@ -535,6 +641,8 @@
         .tip-box-info {
             background: rgba(96, 165, 250, 0.08);
             border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: 10px;
+            padding: 12px 16px;
         }
 
         /* 头部标题装饰 */
@@ -570,6 +678,404 @@
         textarea::-webkit-scrollbar-thumb:hover {
             background: var(--accent);
         }
+
+        /* ═══════════════════════════════════════════════════════════
+           浅色模式 Tailwind 颜色覆盖 (Warm Stone Palette)
+        ═══════════════════════════════════════════════════════════ */
+
+        /* 文字颜色 - 深色文字在浅色背景 */
+        html:not(.dark) .text-stone-100 { color: #1c1917; }
+        html:not(.dark) .text-stone-200 { color: #292524; }
+        html:not(.dark) .text-stone-300 { color: #44403c; }
+        html:not(.dark) .text-stone-400 { color: #57534e; }
+        html:not(.dark) .text-stone-500 { color: #78716c; }
+        html:not(.dark) .text-stone-600 { color: #a8a29e; }
+        html:not(.dark) .text-stone-900 { color: #fafaf9; }
+
+        /* 背景颜色 - 温暖奶油色系 */
+        html:not(.dark) .bg-stone-800 { background-color: #f8f6f1; }
+        html:not(.dark) .bg-stone-800\/30 { background-color: rgba(255, 255, 255, 0.7); }
+        html:not(.dark) .bg-stone-800\/40 { background-color: rgba(255, 255, 255, 0.8); }
+        html:not(.dark) .bg-stone-800\/50 { background-color: rgba(255, 255, 255, 0.85); }
+        html:not(.dark) .bg-stone-800\/60 { background-color: rgba(255, 255, 255, 0.9); }
+        html:not(.dark) .bg-stone-800\/70 { background-color: rgba(248, 246, 241, 0.95); }
+        html:not(.dark) .bg-stone-700 { background-color: #f3f1eb; }
+        html:not(.dark) .bg-stone-700\/60 { background-color: rgba(243, 241, 235, 0.9); }
+        html:not(.dark) .bg-stone-700\/80 { background-color: rgba(243, 241, 235, 0.95); }
+        html:not(.dark) .bg-stone-900 { background-color: #faf8f3; }
+        html:not(.dark) .bg-stone-900\/50 { background-color: rgba(250, 248, 243, 0.85); }
+        html:not(.dark) .bg-stone-900\/60 { background-color: rgba(250, 248, 243, 0.9); }
+        html:not(.dark) .bg-stone-900\/80 { background-color: rgba(250, 248, 243, 0.95); }
+        html:not(.dark) .bg-stone-900\/90 { background-color: rgba(250, 248, 243, 0.97); }
+        html:not(.dark) .bg-stone-900\/95 { background-color: rgba(250, 248, 243, 0.98); }
+
+        /* 边框颜色 - 温和的石灰边框 */
+        html:not(.dark) .border-stone-700 { border-color: #e7e5df; }
+        html:not(.dark) .border-stone-700\/40 { border-color: rgba(214, 211, 204, 0.5); }
+        html:not(.dark) .border-stone-700\/50 { border-color: rgba(214, 211, 204, 0.6); }
+        html:not(.dark) .border-stone-800 { border-color: #e7e5df; }
+        html:not(.dark) .border-stone-800\/30 { border-color: rgba(231, 229, 223, 0.5); }
+        html:not(.dark) .border-stone-800\/50 { border-color: rgba(231, 229, 223, 0.7); }
+        html:not(.dark) .border-stone-600\/50 { border-color: rgba(168, 162, 158, 0.4); }
+
+        /* 分割线 */
+        html:not(.dark) .divide-stone-800 > * + * { border-color: #e7e5df; }
+        html:not(.dark) .divide-stone-700\/50 > * + * { border-color: rgba(231, 229, 223, 0.6); }
+
+        /* 悬停状态 */
+        html:not(.dark) .hover\:bg-stone-700:hover { background-color: #e7e5df; }
+        html:not(.dark) .hover\:bg-stone-800:hover { background-color: #f3f1eb; }
+        html:not(.dark) .hover\:text-stone-200:hover { color: #292524; }
+        html:not(.dark) .hover\:text-stone-300:hover { color: #44403c; }
+        html:not(.dark) .hover\:border-stone-600:hover { border-color: #a8a29e; }
+
+        /* focus 状态 */
+        html:not(.dark) .focus\:ring-stone-700:focus { --tw-ring-color: #d6d3cc; }
+
+        /* 阴影 - 更柔和的暖色调阴影 */
+        html:not(.dark) .shadow-lg { box-shadow: 0 10px 15px -3px rgba(120, 113, 108, 0.1), 0 4px 6px -4px rgba(120, 113, 108, 0.06); }
+        html:not(.dark) .shadow-xl { box-shadow: 0 20px 25px -5px rgba(120, 113, 108, 0.1), 0 8px 10px -6px rgba(120, 113, 108, 0.06); }
+        html:not(.dark) .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(120, 113, 108, 0.2); }
+
+        /* Amber 颜色调整 - 浅色模式下更深以保证可读性 */
+        html:not(.dark) .text-amber-400 { color: #b45309; }
+        html:not(.dark) .text-amber-400\/80 { color: rgba(180, 83, 9, 0.9); }
+        html:not(.dark) .text-amber-500 { color: #92400e; }
+        html:not(.dark) .bg-amber-500\/10 { background-color: rgba(217, 119, 6, 0.08); }
+        html:not(.dark) .bg-amber-500\/15 { background-color: rgba(217, 119, 6, 0.1); }
+        html:not(.dark) .border-amber-500\/20 { border-color: rgba(217, 119, 6, 0.2); }
+        html:not(.dark) .border-amber-500\/30 { border-color: rgba(217, 119, 6, 0.3); }
+        html:not(.dark) .border-amber-500\/50 { border-color: rgba(217, 119, 6, 0.5); }
+
+        /* 浅色模式选中态样式增强 */
+        html:not(.dark) .has-\[\:checked\]\:border-amber-500\/50:has(:checked) {
+            border-color: rgba(245, 158, 11, 0.5);
+            background-color: rgba(255, 251, 235, 0.9);
+        }
+
+        html:not(.dark) .has-\[\:checked\]\:bg-amber-500\/10:has(:checked) {
+            background-color: rgba(255, 251, 235, 0.9);
+        }
+
+        /* 浅色模式模型列表项优化 */
+        html:not(.dark) .model-item {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(231, 229, 223, 0.6);
+        }
+
+        html:not(.dark) .model-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(168, 162, 158, 0.5);
+        }
+
+        html:not(.dark) .model-item:has(input:checked) {
+            background: rgba(255, 251, 235, 0.95);
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+
+        html:not(.dark) .model-item:has(input:checked) .text-stone-300 {
+            color: #1c1917;
+        }
+
+        html:not(.dark) .model-item:has(input:checked) .text-stone-500 {
+            color: #57534e;
+        }
+
+        /* 浅色模式下的 Logo 区域 */
+        html:not(.dark) .shadow-amber-500\/20 { --tw-shadow-color: rgba(217, 119, 6, 0.15); }
+
+        /* 浅色模式主按钮 - 更明亮的琥珀色 */
+        html:not(.dark) .btn-primary {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            color: #451a03;
+        }
+
+        html:not(.dark) .btn-primary::before {
+            background: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%);
+        }
+
+        html:not(.dark) .btn-primary:hover {
+            box-shadow:
+                0 10px 40px -10px rgba(245, 158, 11, 0.4),
+                0 4px 12px -4px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 主题切换过渡 */
+        html, body, .glass, .card, .btn-secondary, .input-field {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           浅色模式弹窗样式
+        ═══════════════════════════════════════════════════════════ */
+
+        /* 弹窗遮罩 - 浅色模式使用更浅的遮罩 */
+        html:not(.dark) .modal-backdrop {
+            background: rgba(120, 113, 108, 0.4);
+        }
+
+        /* 弹窗内容区 - 白色背景 */
+        html:not(.dark) #settingsModal > div,
+        html:not(.dark) #historyModal > div {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(231, 229, 223, 0.8);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 弹窗图标背景 */
+        html:not(.dark) #settingsModal .bg-stone-800,
+        html:not(.dark) #historyModal .bg-stone-800 {
+            background-color: #f3f1eb;
+        }
+
+        /* 弹窗中的列表项 */
+        html:not(.dark) #settingsModal .bg-stone-800\/30,
+        html:not(.dark) #historyModal .bg-stone-800\/30,
+        html:not(.dark) #settingsModelList > div,
+        html:not(.dark) #historyList > div {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(231, 229, 223, 0.8);
+        }
+
+        html:not(.dark) #settingsModal .bg-stone-800\/30:hover,
+        html:not(.dark) #historyModal .bg-stone-800\/30:hover,
+        html:not(.dark) #settingsModelList > div:hover,
+        html:not(.dark) #historyList > div:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(168, 162, 158, 0.5);
+        }
+
+        /* 次要按钮浅色模式 */
+        html:not(.dark) .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(231, 229, 223, 0.9);
+            color: var(--text-primary);
+        }
+
+        html:not(.dark) .btn-secondary:hover {
+            background: #ffffff;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* 提示框浅色模式 */
+        html:not(.dark) .tip-box-info {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        html:not(.dark) .tip-box-info .text-blue-400 {
+            color: #2563eb;
+        }
+
+        html:not(.dark) .tip-box {
+            background: rgba(245, 158, 11, 0.06);
+            border-color: rgba(245, 158, 11, 0.15);
+        }
+
+        /* 警告提示框 */
+        html:not(.dark) .bg-amber-500\/10 {
+            background-color: rgba(245, 158, 11, 0.08);
+        }
+
+        html:not(.dark) .text-amber-400 {
+            color: #b45309;
+        }
+
+        /* 弹窗内小按钮 */
+        html:not(.dark) #historyModal .bg-stone-700,
+        html:not(.dark) #settingsModal .bg-stone-700 {
+            background-color: #f3f1eb;
+            color: #57534e;
+        }
+
+        html:not(.dark) #historyModal .bg-stone-700:hover,
+        html:not(.dark) #settingsModal .bg-stone-700:hover {
+            background-color: #e7e5df;
+            color: #1c1917;
+        }
+
+        html:not(.dark) #historyModal .hover\:bg-stone-600:hover,
+        html:not(.dark) #settingsModal .hover\:bg-stone-600:hover {
+            background-color: #e7e5df;
+        }
+
+        html:not(.dark) #historyModal .text-stone-300,
+        html:not(.dark) #settingsModal .text-stone-300 {
+            color: #44403c;
+        }
+
+        html:not(.dark) #historyModal .text-stone-200,
+        html:not(.dark) #settingsModal .text-stone-200 {
+            color: #1c1917;
+        }
+
+        html:not(.dark) #historyModal .text-emerald-400 {
+            color: #059669;
+        }
+
+        html:not(.dark) #historyModal .text-red-400 {
+            color: #dc2626;
+        }
+
+        /* 历史记录缩略图 - 保持浅灰背景以显示内容 */
+        html:not(.dark) #historyModal [id^="history-thumbnails"] .bg-stone-900,
+        html:not(.dark) #historyModal [id^="history-thumbnails"] .bg-stone-800 {
+            background-color: #e7e5df;
+            border-color: rgba(168, 162, 158, 0.4);
+        }
+
+        html:not(.dark) #historyModal .code-thumbnail {
+            background-color: #f5f5f5;
+        }
+
+        html:not(.dark) #historyModal img.rounded-lg {
+            border-color: rgba(168, 162, 158, 0.4);
+        }
+
+        html:not(.dark) #historyModal img.rounded-lg:hover {
+            border-color: rgba(168, 162, 158, 0.7);
+        }
+
+        /* 缩略图加载中指示器 */
+        html:not(.dark) #historyModal .code-thumbnail .border-blue-500\/30 {
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        html:not(.dark) #historyModal .code-thumbnail .border-t-blue-400 {
+            border-top-color: #3b82f6;
+        }
+
+        /* 空缩略图图标 */
+        html:not(.dark) #historyModal .text-stone-500 svg,
+        html:not(.dark) #historyModal [id^="history-thumbnails"] .text-stone-500 {
+            color: #78716c;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           图片预览弹窗浅色模式
+        ═══════════════════════════════════════════════════════════ */
+
+        /* 遮罩层 */
+        html:not(.dark) #imageModal {
+            background: rgba(120, 113, 108, 0.6);
+        }
+
+        /* 左侧图片区 */
+        html:not(.dark) #imageModal > div > div:first-child {
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 右侧标题 */
+        html:not(.dark) #imageModal .text-stone-100 {
+            color: #1c1917;
+        }
+
+        /* 关闭按钮 */
+        html:not(.dark) #imageModal button[onclick*="closeImageModal"] {
+            background: #f3f1eb;
+            border: 1px solid rgba(231, 229, 223, 0.8);
+        }
+
+        html:not(.dark) #imageModal button[onclick*="closeImageModal"]:hover {
+            background: #e7e5df;
+        }
+
+        html:not(.dark) #imageModal button[onclick*="closeImageModal"] .text-stone-400 {
+            color: #57534e;
+        }
+
+        /* 右侧说明面板 */
+        html:not(.dark) #modalInfoPanel {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: rgba(231, 229, 223, 0.8) !important;
+        }
+
+        /* 下载按钮 */
+        html:not(.dark) #modalDownloadBtn {
+            background: #f3f1eb;
+            border-color: rgba(231, 229, 223, 0.9);
+            color: #1c1917;
+        }
+
+        html:not(.dark) #modalDownloadBtn:hover {
+            background: #e7e5df;
+        }
+
+        /* 说明面板内的信息卡片 */
+        html:not(.dark) #modalInfoPanel > div > div {
+            background: rgba(243, 241, 235, 0.8) !important;
+            border: 1px solid rgba(231, 229, 223, 0.6);
+        }
+
+        html:not(.dark) #modalInfoPanel span[style*="color:#e7e5e4"],
+        html:not(.dark) #modalInfoPanel span[style*="color: #e7e5e4"] {
+            color: #1c1917 !important;
+        }
+
+        html:not(.dark) #modalInfoPanel span[style*="color:#78716c"],
+        html:not(.dark) #modalInfoPanel span[style*="color: #78716c"] {
+            color: #78716c !important;
+        }
+
+        html:not(.dark) #modalInfoPanel span[style*="color:#44403c"],
+        html:not(.dark) #modalInfoPanel span[style*="color: #44403c"] {
+            color: #57534e !important;
+        }
+
+        html:not(.dark) #modalInfoPanel div[style*="background:rgba(255,255,255,0.02)"],
+        html:not(.dark) #modalInfoPanel div[style*="background:rgba(255,255,255,0.03)"],
+        html:not(.dark) #modalInfoPanel div[style*="background:rgba(255,255,255,0.04)"] {
+            background: rgba(243, 241, 235, 0.9) !important;
+            border: 1px solid rgba(231, 229, 223, 0.6) !important;
+        }
+
+        html:not(.dark) #modalInfoPanel p[style*="color:#d6d3d1"],
+        html:not(.dark) #modalInfoPanel span[style*="color:#d6d3d1"] {
+            color: #44403c !important;
+        }
+
+        /* 配色/组件/技术标签 */
+        html:not(.dark) #modalInfoPanel span[style*="background:#"] {
+            border: 1px solid rgba(0,0,0,0.1) !important;
+        }
+
+        /* 标签颜色调整 */
+        html:not(.dark) #modalInfoPanel span[style*="color:#4ade80"] {
+            color: #16a34a !important;
+            background: rgba(22, 163, 74, 0.1) !important;
+        }
+
+        html:not(.dark) #modalInfoPanel span[style*="color:#63b3ed"] {
+            color: #2563eb !important;
+            background: rgba(37, 99, 235, 0.1) !important;
+        }
+
+        html:not(.dark) #modalInfoPanel span[style*="color:#fbbf24"] {
+            color: #b45309 !important;
+            background: rgba(180, 83, 9, 0.1) !important;
+        }
+
+        /* 配色卡片内的色号文字 */
+        html:not(.dark) #modalInfoPanel span[style*="color:#a8a29e"] {
+            color: #57534e !important;
+        }
+
+        /* 配色卡片背景 */
+        html:not(.dark) #modalInfoPanel div[style*="background:rgba(255,255,255,0.04)"] {
+            background: rgba(243, 241, 235, 0.8) !important;
+        }
+
+        /* 主题图标动画 */
+        .theme-icon-sun, .theme-icon-moon {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        #themeToggle:hover .theme-icon-sun,
+        #themeToggle:hover .theme-icon-moon {
+            transform: rotate(15deg);
+        }
     </style>
 </head>
 
@@ -593,7 +1099,23 @@
                         <p class="text-stone-500 text-sm mt-0.5">多模型 UI 设计对比生成器</p>
                     </div>
                 </div>
-                <div class="flex gap-3">
+                <div class="flex gap-3 items-center">
+                    <!-- 主题切换按钮 -->
+                    <button id="themeToggle" onclick="toggleTheme()"
+                        class="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-105"
+                        style="background: var(--surface-overlay); border: 1px solid var(--border-default);"
+                        title="切换主题">
+                        <!-- 太阳图标（浅色模式显示） -->
+                        <svg class="w-5 h-5 theme-icon-sun hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--accent);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <!-- 月亮图标（深色模式显示） -->
+                        <svg class="w-5 h-5 theme-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--accent);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </button>
                     <button onclick="showHistory()"
                         class="btn-secondary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1025,6 +1547,35 @@
     </div>
 
     <script>
+        // ═══════════════════════════════════════════════════
+        // 主题切换系统
+        // ═══════════════════════════════════════════════════
+        function initTheme() {
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = saved ? saved === 'dark' : prefersDark;
+            document.documentElement.classList.toggle('dark', isDark);
+            updateThemeIcons(isDark);
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcons(isDark);
+        }
+
+        function updateThemeIcons(isDark) {
+            const sunIcon = document.querySelector('.theme-icon-sun');
+            const moonIcon = document.querySelector('.theme-icon-moon');
+            if (sunIcon && moonIcon) {
+                sunIcon.classList.toggle('hidden', isDark);
+                moonIcon.classList.toggle('hidden', !isDark);
+            }
+        }
+
+        // 页面加载时立即初始化主题（避免闪烁）
+        initTheme();
+
         // ═══════════════════════════════════════════════════
         // IndexedDB：存储完整图片（不受 localStorage 5MB 限制）
         // key 格式：`${historyId}_${modelName}`
@@ -1629,6 +2180,9 @@
 
         // 页面加载时初始化
         window.onload = () => {
+            // 初始化主题图标状态
+            updateThemeIcons(document.documentElement.classList.contains('dark'));
+
             // API Key 已移至服务器端，前端无需检查
             updateCharCount();
             loadModelSelectionList(); // 加载模型列表（默认勾选设置中已选的模型）
@@ -2059,7 +2613,7 @@
             // 禁用按钮
             const btn = document.getElementById('generateBtn');
             btn.disabled = true;
-            btn.textContent = '🔄 生成中...';
+            btn.textContent = '生成中...';
 
             // 清空结果并隐藏进度区域
             currentResults = [];
