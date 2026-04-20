@@ -66,31 +66,31 @@
         ═══════════════════════════════════════════════════════════ */
 
         :root {
-            /* Light Mode (default variables) - Warm Cream Palette */
+            /* Light Mode (default variables) - Clean Warm White */
             --surface: #faf8f3;
             --surface-raised: #ffffff;
-            --surface-overlay: #f3f1eb;
-            --surface-item: #f8f6f1;
-            --border-subtle: rgba(120, 113, 108, 0.12);
-            --border-default: rgba(120, 113, 108, 0.2);
+            --surface-overlay: #f5f3ee;
+            --surface-item: #ffffff;
+            --border-subtle: #ebe9e3;
+            --border-default: #e7e5df;
             --text-primary: #1c1917;
             --text-secondary: #57534e;
             --text-muted: #a8a29e;
-            --accent: #d97706;
-            --accent-hover: #b45309;
-            --accent-glow: rgba(217, 119, 6, 0.15);
+            --accent: #f59e0b;
+            --accent-hover: #d97706;
+            --accent-glow: rgba(245, 158, 11, 0.12);
             --mint: #059669;
             --error: #dc2626;
             /* Scrollbar colors */
-            --scrollbar-track: #f3f1eb;
+            --scrollbar-track: #f5f3ee;
             --scrollbar-thumb: #d6d3cc;
             --scrollbar-thumb-hover: #a8a29e;
             /* Glass effect */
-            --glass-bg: rgba(255, 253, 250, 0.85);
-            --glass-border: rgba(120, 113, 108, 0.15);
-            --glass-shadow: rgba(120, 113, 108, 0.08);
+            --glass-bg: #ffffff;
+            --glass-border: #e7e5df;
+            --glass-shadow: rgba(0, 0, 0, 0.04);
             /* Noise overlay opacity */
-            --noise-opacity: 0.012;
+            --noise-opacity: 0;
         }
 
         .dark {
@@ -138,11 +138,10 @@
                 radial-gradient(ellipse 60% 40% at 100% 100%, rgba(52, 211, 153, 0.05), transparent);
         }
 
-        /* 浅色模式渐变背景 - 温暖的米色调 */
+        /* 浅色模式纯净背景 - 去除渐变，保持干净 */
         html:not(.dark) body {
-            background-image:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(217, 119, 6, 0.04), transparent),
-                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(120, 113, 108, 0.03), transparent);
+            background: #faf8f3;
+            background-image: none;
         }
 
         /* 噪点纹理叠加 */
@@ -211,9 +210,11 @@
         }
 
         html:not(.dark) .glass {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(231, 229, 223, 0.8);
-            box-shadow: 0 4px 12px -2px rgba(120, 113, 108, 0.08);
+            background: #ffffff;
+            border: 1px solid #e7e5df;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
         }
 
         .glass-dark {
@@ -305,12 +306,18 @@
         /* 浅色模式输入框优化 */
         html:not(.dark) .input-field {
             background: #ffffff;
-            border-color: rgba(231, 229, 223, 0.9);
+            border: 1px solid #e7e5df;
         }
 
         html:not(.dark) .input-field:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+            box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.1);
+        }
+
+        /* 浅色模式工具栏 */
+        html:not(.dark) .bg-stone-800\/40[style*="border-radius:0 0"] {
+            background: #f8f6f1 !important;
+            border-color: #e7e5df !important;
         }
 
         /* 加载动画 - 更优雅的版本 */
@@ -541,19 +548,19 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
-        /* 浅色模式复选框优化 */
+        /* 浅色模式复选框优化 - 浅色背景 + 橙色勾 */
         html:not(.dark) input[type="checkbox"] {
             background: #ffffff;
-            border-color: rgba(168, 162, 158, 0.4);
+            border-color: #d6d3cc;
         }
 
         html:not(.dark) input[type="checkbox"]:checked {
-            background: #f59e0b;
-            border-color: #f59e0b;
+            background: #fffbeb;
+            border: 1px solid rgba(245, 158, 11, 0.5);
         }
 
         html:not(.dark) input[type="checkbox"]:checked::after {
-            border-color: #451a03;
+            border-color: #f59e0b;
         }
 
         /* 单选框自定义样式 */
@@ -692,31 +699,32 @@
         html:not(.dark) .text-stone-600 { color: #a8a29e; }
         html:not(.dark) .text-stone-900 { color: #fafaf9; }
 
-        /* 背景颜色 - 温暖奶油色系 */
-        html:not(.dark) .bg-stone-800 { background-color: #f8f6f1; }
-        html:not(.dark) .bg-stone-800\/30 { background-color: rgba(255, 255, 255, 0.7); }
-        html:not(.dark) .bg-stone-800\/40 { background-color: rgba(255, 255, 255, 0.8); }
-        html:not(.dark) .bg-stone-800\/50 { background-color: rgba(255, 255, 255, 0.85); }
-        html:not(.dark) .bg-stone-800\/60 { background-color: rgba(255, 255, 255, 0.9); }
-        html:not(.dark) .bg-stone-800\/70 { background-color: rgba(248, 246, 241, 0.95); }
-        html:not(.dark) .bg-stone-700 { background-color: #f3f1eb; }
-        html:not(.dark) .bg-stone-700\/60 { background-color: rgba(243, 241, 235, 0.9); }
-        html:not(.dark) .bg-stone-700\/80 { background-color: rgba(243, 241, 235, 0.95); }
+        /* 背景颜色 - 干净的白色/米色系 */
+        html:not(.dark) .bg-stone-800 { background-color: #f5f3ee; }
+        html:not(.dark) .bg-stone-800\/30 { background-color: #ffffff; }
+        html:not(.dark) .bg-stone-800\/40 { background-color: #faf8f3; }
+        html:not(.dark) .bg-stone-800\/50 { background-color: #f8f6f1; }
+        html:not(.dark) .bg-stone-800\/60 { background-color: #f5f3ee; }
+        html:not(.dark) .bg-stone-800\/70 { background-color: #f3f1eb; }
+        html:not(.dark) .bg-stone-700 { background-color: #f0eee8; }
+        html:not(.dark) .bg-stone-700\/60 { background-color: #f5f3ee; }
+        html:not(.dark) .bg-stone-700\/80 { background-color: #f3f1eb; }
         html:not(.dark) .bg-stone-900 { background-color: #faf8f3; }
-        html:not(.dark) .bg-stone-900\/50 { background-color: rgba(250, 248, 243, 0.85); }
-        html:not(.dark) .bg-stone-900\/60 { background-color: rgba(250, 248, 243, 0.9); }
-        html:not(.dark) .bg-stone-900\/80 { background-color: rgba(250, 248, 243, 0.95); }
-        html:not(.dark) .bg-stone-900\/90 { background-color: rgba(250, 248, 243, 0.97); }
-        html:not(.dark) .bg-stone-900\/95 { background-color: rgba(250, 248, 243, 0.98); }
+        html:not(.dark) .bg-stone-900\/50 { background-color: #faf8f3; }
+        html:not(.dark) .bg-stone-900\/60 { background-color: #f8f6f1; }
+        html:not(.dark) .bg-stone-900\/80 { background-color: #f5f3ee; }
+        html:not(.dark) .bg-stone-900\/90 { background-color: #f3f1eb; }
+        html:not(.dark) .bg-stone-900\/95 { background-color: #f0eee8; }
 
-        /* 边框颜色 - 温和的石灰边框 */
+        /* 边框颜色 - 统一米色边框 */
         html:not(.dark) .border-stone-700 { border-color: #e7e5df; }
-        html:not(.dark) .border-stone-700\/40 { border-color: rgba(214, 211, 204, 0.5); }
-        html:not(.dark) .border-stone-700\/50 { border-color: rgba(214, 211, 204, 0.6); }
+        html:not(.dark) .border-stone-700\/40 { border-color: #e7e5df; }
+        html:not(.dark) .border-stone-700\/50 { border-color: #e7e5df; }
+        html:not(.dark) .border-stone-700\/30 { border-color: #ebe9e3; }
         html:not(.dark) .border-stone-800 { border-color: #e7e5df; }
-        html:not(.dark) .border-stone-800\/30 { border-color: rgba(231, 229, 223, 0.5); }
-        html:not(.dark) .border-stone-800\/50 { border-color: rgba(231, 229, 223, 0.7); }
-        html:not(.dark) .border-stone-600\/50 { border-color: rgba(168, 162, 158, 0.4); }
+        html:not(.dark) .border-stone-800\/30 { border-color: #ebe9e3; }
+        html:not(.dark) .border-stone-800\/50 { border-color: #e7e5df; }
+        html:not(.dark) .border-stone-600\/50 { border-color: #d6d3cc; }
 
         /* 分割线 */
         html:not(.dark) .divide-stone-800 > * + * { border-color: #e7e5df; }
@@ -749,28 +757,38 @@
 
         /* 浅色模式选中态样式增强 */
         html:not(.dark) .has-\[\:checked\]\:border-amber-500\/50:has(:checked) {
-            border-color: rgba(245, 158, 11, 0.5);
-            background-color: rgba(255, 251, 235, 0.9);
+            border-color: #f59e0b !important;
+            background-color: #fffbeb !important;
         }
 
         html:not(.dark) .has-\[\:checked\]\:bg-amber-500\/10:has(:checked) {
-            background-color: rgba(255, 251, 235, 0.9);
+            background-color: #fffbeb !important;
+        }
+
+        /* 浅色模式平台切换按钮 */
+        html:not(.dark) label[class*="bg-stone-800/30"][class*="rounded-xl"] {
+            background: #ffffff;
+            border-color: #e7e5df;
+        }
+
+        html:not(.dark) label[class*="bg-stone-800/30"][class*="rounded-xl"]:hover {
+            background: #faf8f3;
         }
 
         /* 浅色模式模型列表项优化 */
         html:not(.dark) .model-item {
-            background: rgba(255, 255, 255, 0.6);
-            border-color: rgba(231, 229, 223, 0.6);
+            background: #ffffff;
+            border: 1px solid #e7e5df;
         }
 
         html:not(.dark) .model-item:hover {
-            background: rgba(255, 255, 255, 0.9);
-            border-color: rgba(168, 162, 158, 0.5);
+            background: #faf8f3;
+            border-color: #d6d3cc;
         }
 
         html:not(.dark) .model-item:has(input:checked) {
-            background: rgba(255, 251, 235, 0.95);
-            border-color: rgba(245, 158, 11, 0.4);
+            background: #fffbeb;
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         html:not(.dark) .model-item:has(input:checked) .text-stone-300 {
@@ -784,20 +802,58 @@
         /* 浅色模式下的 Logo 区域 */
         html:not(.dark) .shadow-amber-500\/20 { --tw-shadow-color: rgba(217, 119, 6, 0.15); }
 
-        /* 浅色模式主按钮 - 更明亮的琥珀色 */
+        /* 空状态图标区域 */
+        html:not(.dark) .text-stone-600 {
+            color: #a8a29e;
+        }
+
+        /* 头部区域边框 */
+        html:not(.dark) header.glass {
+            border-color: #e7e5df !important;
+        }
+
+        /* 左右面板边框 */
+        html:not(.dark) #leftPanel,
+        html:not(.dark) [class*="resultsContainer"] {
+            border-color: #e7e5df !important;
+        }
+
+        /* 浅色模式主按钮 - 统一渐变色 */
         html:not(.dark) .btn-primary {
-            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
             color: #451a03;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
         }
 
         html:not(.dark) .btn-primary::before {
-            background: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%);
+            background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
         }
 
         html:not(.dark) .btn-primary:hover {
-            box-shadow:
-                0 10px 40px -10px rgba(245, 158, 11, 0.4),
-                0 4px 12px -4px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        /* 浅色模式复制/下载按钮统一渐变 */
+        html:not(.dark) #modalCopyBtn,
+        html:not(.dark) button[class*="bg-amber-600"] {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+            color: #451a03 !important;
+        }
+
+        html:not(.dark) #modalCopyBtn:hover,
+        html:not(.dark) button[class*="bg-amber-600"]:hover {
+            background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%) !important;
+        }
+
+        /* 浅色模式图标背景 */
+        html:not(.dark) .bg-amber-500\/10 {
+            background-color: #fef3c7 !important;
+        }
+
+        html:not(.dark) .rounded-lg.bg-stone-800\/50,
+        html:not(.dark) .rounded-2xl.bg-stone-800\/50 {
+            background: #f5f3ee !important;
+            border-color: #e7e5df !important;
         }
 
         /* 主题切换过渡 */
@@ -847,15 +903,28 @@
 
         /* 次要按钮浅色模式 */
         html:not(.dark) .btn-secondary {
-            background: rgba(255, 255, 255, 0.9);
-            border-color: rgba(231, 229, 223, 0.9);
-            color: var(--text-primary);
+            background: #ffffff;
+            border: 1px solid #e7e5df;
+            color: #1c1917;
         }
 
         html:not(.dark) .btn-secondary:hover {
-            background: #ffffff;
+            background: #faf8f3;
             border-color: var(--accent);
             color: var(--accent);
+        }
+
+        /* 快捷模板按钮 */
+        html:not(.dark) button[onclick*="setPreset"] {
+            background: #ffffff;
+            border-color: #e7e5df;
+            color: #57534e;
+        }
+
+        html:not(.dark) button[onclick*="setPreset"]:hover {
+            background: #faf8f3;
+            border-color: #d6d3cc;
+            color: #1c1917;
         }
 
         /* 提示框浅色模式 */
@@ -1067,6 +1136,91 @@
             background: rgba(243, 241, 235, 0.8) !important;
         }
 
+        /* 图片弹窗右侧面板整体容器 */
+        html:not(.dark) #imageModalRightPanel {
+            background: #ffffff !important;
+            border-color: #e7e5df !important;
+            border: 1px solid #e7e5df !important;
+        }
+
+        html:not(.dark) #imageModalRightPanel .text-stone-100 {
+            color: #1c1917 !important;
+        }
+
+        html:not(.dark) #imageModalRightPanel .text-stone-200 {
+            color: #1c1917 !important;
+        }
+
+        html:not(.dark) #imageModalRightPanel .text-stone-400 {
+            color: #57534e !important;
+        }
+
+        html:not(.dark) #imageModalRightPanel [class*="border-white"] {
+            border-color: #e7e5df !important;
+        }
+
+        html:not(.dark) #imageModalRightPanel [class*="bg-white"] {
+            background: rgba(0, 0, 0, 0.04) !important;
+        }
+
+        html:not(.dark) #imageModalRightPanel [class*="bg-"][class*="292524"] {
+            background: #f3f1eb !important;
+            border-color: #e7e5df !important;
+            color: #1c1917 !important;
+        }
+
+        /* 图片弹窗左侧图片区 */
+        html:not(.dark) #imageModal > div > div:first-child {
+            background: #f5f3ee !important;
+        }
+
+        /* 右侧面板顶部标题栏 */
+        html:not(.dark) #imageModalRightPanel > div:first-child {
+            border-color: #e7e5df !important;
+        }
+
+        html:not(.dark) #imageModalRightPanel > div:first-child span {
+            color: #1c1917 !important;
+        }
+
+        html:not(.dark) #imageModalRightPanel > div:first-child button {
+            background: rgba(0, 0, 0, 0.04) !important;
+            color: #57534e !important;
+        }
+
+        html:not(.dark) #imageModalRightPanel > div:first-child button:hover {
+            background: rgba(0, 0, 0, 0.08) !important;
+            color: #1c1917 !important;
+        }
+
+        /* 右侧面板底部按钮区 */
+        html:not(.dark) #imageModalRightPanel > div:last-child {
+            border-color: #e7e5df !important;
+        }
+
+        /* 右侧面板内容区滚动条 */
+        html:not(.dark) #imageModalRightPanel #modalInfoPanel::-webkit-scrollbar-track {
+            background: #f5f3ee;
+        }
+
+        html:not(.dark) #imageModalRightPanel #modalInfoPanel::-webkit-scrollbar-thumb {
+            background: #d6d3cc;
+        }
+
+        html:not(.dark) #imageModalRightPanel #modalInfoPanel::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e;
+        }
+
+        /* 复制按钮 - 浅色模式保持渐变 */
+        html:not(.dark) #modalCopyBtn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+            color: #1c1917 !important;
+        }
+
+        html:not(.dark) #modalCopyBtn:hover {
+            background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%) !important;
+        }
+
         /* 主题图标动画 */
         .theme-icon-sun, .theme-icon-moon {
             transition: transform 0.3s ease, opacity 0.3s ease;
@@ -1255,7 +1409,7 @@
                     </div>
 
                     <!-- 生成按钮 -->
-                    <div id="generateBtnSection" class="mt-3">
+                    <div id="generateBtnSection" class="mt-4 mb-2">
                         <button onclick="startGeneration()" id="generateBtn"
                             class="w-full btn-primary py-4 rounded-xl text-base flex items-center justify-center gap-2">
                             <span>开始生成</span>
@@ -1508,23 +1662,23 @@
                     <img id="modalImage" src="" class="w-full block">
                 </div>
             </div>
-            <!-- 右：说明区 -->
-            <div class="flex-1 min-w-0 flex flex-col gap-3">
-                <!-- 顶部：模型名 + 关闭 -->
-                <div class="flex items-center justify-between flex-shrink-0">
+            <!-- 右：说明区（整合为一张卡片） -->
+            <div id="imageModalRightPanel" class="flex-1 min-w-0 flex flex-col bg-[#1c1917] rounded-2xl border border-white/[0.07] overflow-hidden">
+                <!-- 顶部：标题 + 关闭 -->
+                <div class="flex items-center justify-between flex-shrink-0 px-5 py-4 border-b border-white/[0.07]">
                     <span class="text-stone-100 font-bold text-[15px]">图片详情</span>
-                    <button class="w-9 h-9 rounded-xl bg-[#292524] hover:bg-[#44403c] flex items-center justify-center text-stone-400 hover:text-stone-200 transition"
+                    <button class="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-stone-400 hover:text-stone-200 transition"
                         onclick="event.stopPropagation(); closeImageModal();">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
                 </div>
-                <!-- 说明区 -->
-                <div id="modalInfoPanel" class="flex-1 min-h-0 bg-[#1c1917]/80 rounded-2xl border border-white/[0.07] overflow-y-auto scrollbar-dark p-5" style="scrollbar-gutter:stable;">
+                <!-- 内容区 -->
+                <div id="modalInfoPanel" class="flex-1 min-h-0 overflow-y-auto scrollbar-dark px-5 py-4" style="scrollbar-gutter:stable;">
                 </div>
                 <!-- 底部按钮 -->
-                <div class="flex flex-row gap-2 flex-shrink-0">
+                <div class="flex flex-row gap-2 flex-shrink-0 px-5 py-4 border-t border-white/[0.07]">
                     <button id="modalCopyBtn"
                         class="w-full flex items-center justify-center gap-2 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition text-[13px]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -6053,7 +6207,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             }
         }
 
-        function viewHistoryItem(historyId) {
+        async function viewHistoryItem(historyId) {
             const item = generationHistory.find(h => h.id === historyId) || filteredHistory.find(h => h.id === historyId);
             if (!item) {
                 alert('历史记录不存在');
@@ -6064,19 +6218,24 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             currentResults = [];
             document.getElementById('resultsGrid').innerHTML = '';
 
-            // 加载历史结果 - 使用保存的图片数据
-            item.results.forEach(result => {
+            // 加载历史结果 - 从 IndexedDB 加载图片数据
+            for (const result of item.results) {
                 if (result.isError) {
                     // 错误结果
                     addResultCard(result.modelName, '', result.cost, true, result.errorMsg, null);
                 } else {
-                    // 成功结果 - 使用保存的图片URL或代码内容
-                    if (result.imageUrl) {
-                        // 有图片URL，正常显示
-                        addResultCard(result.modelName, result.imageUrl, result.cost, false, '', result.codeContent);
-                    } else if (result.codeContent) {
+                    // 尝试从 IndexedDB 加载图片
+                    const imageKey = `${item.id}_${result.modelName}`;
+                    const codeKey = `${item.id}_${result.modelName}_code`;
+                    const imageUrl = await getImageFromDB(imageKey);
+                    const codeContent = await getImageFromDB(codeKey);
+
+                    if (imageUrl) {
+                        // 有图片，正常显示
+                        addResultCard(result.modelName, imageUrl, result.cost, false, '', codeContent);
+                    } else if (codeContent) {
                         // 只有代码内容，显示代码预览
-                        addResultCard(result.modelName, '', result.cost, false, '', result.codeContent);
+                        addResultCard(result.modelName, '', result.cost, false, '', codeContent);
                     } else {
                         // 没有图片也没有代码，显示提示
                         const card = document.createElement('div');
@@ -6105,7 +6264,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                         document.getElementById('resultsGrid').appendChild(card);
                     }
                 }
-            });
+            }
 
             // 填充输入框
             document.getElementById('promptInput').value = item.prompt;
@@ -6272,62 +6431,69 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             iframeWrap.appendChild(iframe);
             iframeCol.appendChild(iframeWrap);
 
-            // ── 右：说明区 ──
+            // ── 右：说明区（统一卡片结构，与图片预览一致） ──
+            const isDark = document.documentElement.classList.contains('dark');
             const side = document.createElement('div');
-            side.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;min-height:0;';
+            side.id = 'codePreviewRightPanel';
+            side.style.cssText = `flex:1;min-width:0;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;border:1px solid ${isDark ? 'rgba(255,255,255,0.07)' : '#e7e5df'};background:${isDark ? '#1c1917' : '#ffffff'};`;
 
-            // 顶部栏：模型名 + 关闭
+            // 顶部栏：标题 + 关闭
             const topBar = document.createElement('div');
-            topBar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-shrink:0;';
+            topBar.style.cssText = `display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding:16px 20px;border-bottom:1px solid ${isDark ? 'rgba(255,255,255,0.07)' : '#e7e5df'};`;
 
-            const modelLabel = document.createElement('div');
-            modelLabel.style.cssText = 'color:#fafaf9;font-weight:700;font-size:15px;';
-            modelLabel.textContent = modelName;
+            const titleLabel = document.createElement('span');
+            titleLabel.style.cssText = `color:${isDark ? '#fafaf9' : '#1c1917'};font-weight:700;font-size:15px;`;
+            titleLabel.textContent = '代码详情';
 
             const closeBtn = document.createElement('button');
-            closeBtn.style.cssText = 'width:36px;height:36px;border-radius:10px;background:#292524;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#a8a29e;transition:background 0.15s;flex-shrink:0;';
+            closeBtn.style.cssText = `width:32px;height:32px;border-radius:8px;background:${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'};border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:${isDark ? '#a8a29e' : '#57534e'};transition:background 0.15s;flex-shrink:0;`;
             closeBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
-            closeBtn.onmouseenter = () => closeBtn.style.background = '#44403c';
-            closeBtn.onmouseleave = () => closeBtn.style.background = '#292524';
+            closeBtn.onmouseenter = () => closeBtn.style.background = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
+            closeBtn.onmouseleave = () => closeBtn.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
             closeBtn.onclick = () => { modal.remove(); document.removeEventListener('keydown', handleEsc); };
 
-            topBar.appendChild(modelLabel);
+            topBar.appendChild(titleLabel);
             topBar.appendChild(closeBtn);
 
-            // 设计说明区（可滚动）
+            // 内容区（可滚动）
             const descPanel = document.createElement('div');
-            descPanel.style.cssText = 'flex:1;min-height:0;background:rgba(28,25,23,0.8);border-radius:14px;border:1px solid rgba(255,255,255,0.07);overflow-y:auto;padding:20px;scrollbar-gutter:stable;';
+            descPanel.id = 'codeModalInfoPanel';
+            descPanel.style.cssText = `flex:1;min-height:0;overflow-y:auto;padding:16px 20px;scrollbar-gutter:stable;background:${isDark ? '#1c1917' : '#ffffff'};`;
             descPanel.classList.add('scrollbar-dark');
 
+            const cardBg = isDark ? 'rgba(255,255,255,0.04)' : '#f8f6f1';
+            const labelColor = isDark ? '#78716c' : '#78716c';
+            const valueColor = isDark ? '#e7e5e4' : '#1c1917';
+
             descPanel.innerHTML = `
-                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
-                    <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
-                        <span style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">模型</span>
-                        <span style="color:#e7e5e4;font-size:13px;font-weight:600;">${modelName || '—'}</span>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div style="background:${cardBg};border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border:1px solid ${isDark ? 'transparent' : '#e7e5df'};">
+                        <span style="color:${labelColor};font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">模型</span>
+                        <span style="color:${valueColor};font-size:13px;font-weight:600;">${modelName || '—'}</span>
                     </div>
-                    <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
-                        <span style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">输出类型</span>
-                        <span style="color:#e7e5e4;font-size:13px;font-weight:600;">代码预览</span>
+                    <div style="background:${cardBg};border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border:1px solid ${isDark ? 'transparent' : '#e7e5df'};">
+                        <span style="color:${labelColor};font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">输出类型</span>
+                        <span style="color:${valueColor};font-size:13px;font-weight:600;">代码预览</span>
                     </div>
                 </div>
-                ${buildCodeAnalysisHtml(codeContent)}
+                <div style="margin-top:12px;">${buildCodeAnalysisHtml(codeContent, isDark)}</div>
             `;
 
             // 底部按钮
             const btns = document.createElement('div');
-            btns.style.cssText = 'display:flex;flex-direction:row;gap:8px;flex-shrink:0;';
+            btns.style.cssText = `display:flex;flex-direction:row;gap:8px;flex-shrink:0;padding:16px 20px;border-top:1px solid ${isDark ? 'rgba(255,255,255,0.07)' : '#e7e5df'};`;
 
             const copyBtn = document.createElement('button');
-            copyBtn.style.cssText = 'flex:1;background:#d97706;border:none;color:#fff;font-weight:600;font-size:13px;padding:13px 0;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;';
+            copyBtn.style.cssText = `flex:1;background:linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);border:none;color:#1c1917;font-weight:600;font-size:13px;padding:13px 0;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s;`;
             copyBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>复制图片`;
-            copyBtn.onmouseenter = () => copyBtn.style.background = '#f59e0b';
-            copyBtn.onmouseleave = () => copyBtn.style.background = '#d97706';
+            copyBtn.onmouseenter = () => copyBtn.style.background = 'linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%)';
+            copyBtn.onmouseleave = () => copyBtn.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
 
             const dlBtn = document.createElement('button');
-            dlBtn.style.cssText = 'flex:1;background:#292524;border:1px solid rgba(255,255,255,0.08);color:#e7e5e4;font-weight:600;font-size:13px;padding:13px 0;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;';
+            dlBtn.style.cssText = `flex:1;background:${isDark ? '#292524' : '#f3f1eb'};border:1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e7e5df'};color:${isDark ? '#e7e5e4' : '#1c1917'};font-weight:600;font-size:13px;padding:13px 0;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;`;
             dlBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>下载图片`;
-            dlBtn.onmouseenter = () => dlBtn.style.background = '#44403c';
-            dlBtn.onmouseleave = () => dlBtn.style.background = '#292524';
+            dlBtn.onmouseenter = () => dlBtn.style.background = isDark ? '#44403c' : '#e7e5df';
+            dlBtn.onmouseleave = () => dlBtn.style.background = isDark ? '#292524' : '#f3f1eb';
 
             copyBtn.onclick = async () => {
                 try { await copyLongImageToClipboard(codeContent, platform, modelName); }
@@ -6335,14 +6501,14 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             };
             dlBtn.onclick = async () => {
                 try {
-                    showToast('🖼️ 正在生成图片...', 2000);
+                    showToast('正在生成图片...', 2000);
                     const dataUrl = await copyLongImageToClipboard(codeContent, platform, modelName);
                     const a = document.createElement('a');
                     a.href = dataUrl;
                     a.download = `${modelName || 'ui-design'}-${Date.now()}.png`;
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                    showToast('✅ 图片已下载', 2000);
-                } catch (err) { showToast('❌ 下载图片失败', 2000); }
+                    showToast('图片已下载', 2000);
+                } catch (err) { showToast('下载图片失败', 2000); }
             };
 
             btns.appendChild(copyBtn);

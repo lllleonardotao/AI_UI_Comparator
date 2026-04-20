@@ -167,3 +167,19 @@ AI 生成的 HTML 页面通过 `iframe.srcdoc` 加载，其中的折线图、柱
 - 原因：原有 stone-xxx 颜色映射不够温暖、部分元素使用硬编码深色值、选中态文字对比度不足、inline style 覆盖困难
 - 解决：统一使用暖石色系（#faf8f3/#f8f6f1/#e7e5df）、按钮改用亮琥珀渐变、复选框/单选框适配、弹窗列表项白底处理、历史缩略图保留浅灰背景、图片详情面板 !important 覆盖 inline style
 - TODO：验证所有弹窗/卡片在两种主题下的一致性、测试系统主题偏好检测
+
+【SESSION LOG】
+- 改动：图片预览弹窗右侧面板重构为统一卡片布局
+- 新增：#imageModalRightPanel 整合容器（标题栏 + 内容区 + 底部按钮），顶部/底部边框分隔，中间区域独立滚动
+- 问题：原布局标题、内容、按钮分散，视觉碎片化
+- 原因：缺少统一容器包裹
+- 解决：将"图片详情"标题+关闭按钮、信息面板、操作按钮整合到一张卡片内，使用 border-b/border-t 分隔各区域
+- TODO：为新结构添加浅色模式 CSS 覆盖规则
+
+【SESSION LOG】
+- 改动：图片预览右侧面板浅色模式适配、历史记录图片加载修复、代码预览弹窗结构重构
+- 新增：#imageModalRightPanel 浅色模式 CSS（白色背景、浅灰边框、文字颜色适配、滚动条样式）
+- 问题：历史记录查看时显示"图片数据未保存"、代码预览弹窗结构与图片预览不一致
+- 原因：viewHistoryItem 未从 IndexedDB 加载图片（imageUrl 未存入 localStorage）、代码预览使用分散的 inline style
+- 解决：viewHistoryItem 改为 async，使用 getImageFromDB() 加载图片；代码预览重构为统一卡片布局（标题栏+内容区+按钮区），根据 isDark 动态设置颜色
+- TODO：验证 buildCodeAnalysisHtml 是否需要 isDark 参数

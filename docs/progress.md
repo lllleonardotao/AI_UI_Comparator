@@ -48,19 +48,20 @@
 ## 2026-04-20
 
 ## 当前状态
-- 优化阶段 — 核心功能稳定，正在完善用户体验和视觉一致性
+- 优化阶段 — 主题系统完善中，弹窗结构统一化进行中
 
 ## 已完成
-- 浅色/深色主题切换功能上线（基于 Claude Design Style 设计规范）
-- 主题切换按钮集成到 header，支持 localStorage 持久化
-- 全站 Tailwind 颜色覆盖规则完成，浅色模式使用暖石色系
-- 主要弹窗（设置/历史/图片详情）浅色模式适配完成
+- 浅色/深色主题切换功能完整上线（CSS 变量 + Tailwind 覆盖 + localStorage）
+- 图片预览弹窗右侧面板重构为统一卡片布局（标题栏+内容区+按钮区）
+- 代码预览弹窗结构与图片预览对齐，支持动态主题检测
+- 历史记录图片加载修复（从 IndexedDB 正确读取）
+- 全站浅色模式暖石色系适配（#faf8f3/#f8f6f1/#e7e5df）
 
 ## 当前问题 / 卡点
-- 部分 inline style 需要 !important 覆盖，维护成本较高
-- 图片详情面板的代码分析区域样式依赖运行时 JS 生成，主题切换后需刷新
+- buildCodeAnalysisHtml 可能需要 isDark 参数以完全支持主题切换
+- 部分 inline style 仍需 !important 覆盖
 
 ## 下一步
-- 验证所有弹窗/卡片在两种主题下的视觉一致性
-- 测试系统主题偏好自动检测（prefers-color-scheme）
-- 考虑将 inline style 改为 CSS class，减少 !important 依赖
+- 验证 buildCodeAnalysisHtml 主题适配
+- 全面测试两种主题下的弹窗视觉一致性
+- 清理冗余的 CSS 覆盖规则
