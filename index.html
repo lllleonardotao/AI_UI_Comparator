@@ -82,7 +82,8 @@
             background-image:
                 radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245, 158, 11, 0.08), transparent),
                 radial-gradient(ellipse 60% 40% at 100% 100%, rgba(52, 211, 153, 0.05), transparent);
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
             color: var(--text-primary);
             font-feature-settings: 'cv11', 'ss01';
             letter-spacing: -0.01em;
@@ -360,28 +361,28 @@
         }
 
         *::-webkit-scrollbar-track {
-            background: transparent;
+            background: #0c0a09;
             border-radius: 4px;
         }
 
         *::-webkit-scrollbar-thumb {
-            background: var(--surface-overlay);
+            background: #292524;
             border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            border: 1px solid #1c1917;
         }
 
         *::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
+            background: #44403c;
         }
 
         *::-webkit-scrollbar-corner {
-            background: transparent;
+            background: #0c0a09;
         }
 
         /* Firefox 兼容 */
         * {
             scrollbar-width: thin;
-            scrollbar-color: var(--surface-overlay) transparent;
+            scrollbar-color: #292524 #0c0a09;
         }
 
         /* 保留 .scrollbar-styled 兼容原有标注 */
@@ -398,6 +399,23 @@
         .scrollbar-hide {
             -ms-overflow-style: none;
             scrollbar-width: none;
+        }
+
+        /* 暗色滚动条（用于弹窗/iframe容器） */
+        .scrollbar-dark::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .scrollbar-dark::-webkit-scrollbar-track {
+            background: #1c1917;
+            border-radius: 4px;
+        }
+        .scrollbar-dark::-webkit-scrollbar-thumb {
+            background: #44403c;
+            border-radius: 4px;
+        }
+        .scrollbar-dark::-webkit-scrollbar-thumb:hover {
+            background: #f59e0b;
         }
 
         /* 选择框样式 */
@@ -555,8 +573,8 @@
     </style>
 </head>
 
-<body class="p-3 md:p-4 font-sans antialiased min-h-screen flex flex-col">
-    <div class="max-w-7xl mx-auto relative flex-1 flex flex-col w-full">
+<body class="p-3 md:p-4 font-sans antialiased h-screen overflow-hidden flex flex-col">
+    <div class="max-w-[1600px] mx-auto relative flex-1 flex flex-col w-full min-h-0">
         <!-- Header -->
         <header class="glass rounded-2xl p-4 mb-4 border border-stone-800/50">
             <div class="flex items-center justify-between">
@@ -570,7 +588,7 @@
                         <h1 class="text-2xl font-bold tracking-tight flex items-center gap-2">
                             <span class="text-gradient">AI UI</span>
                             <span class="text-stone-100"> Comparator</span>
-                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 tracking-wide">FitAI v2.0</span>
+                            <span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400/80 border border-amber-500/20 ml-2 tracking-wider">V2.0-FITapi</span>
                         </h1>
                         <p class="text-stone-500 text-sm mt-0.5">多模型 UI 设计对比生成器</p>
                     </div>
@@ -601,11 +619,11 @@
         </header>
 
         <!-- Main Content -->
-        <div class="grid md:grid-cols-12 gap-6 flex-1">
+        <div id="mainContent" class="flex gap-0 flex-1 min-h-0 overflow-hidden">
             <!-- Left: Input Panel -->
-            <div class="md:col-span-4 flex flex-col">
+            <div id="leftColumn" class="flex flex-col overflow-hidden" style="width: 380px; min-width: 280px; max-width: 600px; flex-shrink: 0;">
                 <div id="leftPanel"
-                    class="glass rounded-2xl p-5 flex flex-col max-h-[calc(100vh-1.5rem-60px-1rem)] sticky top-3">
+                    class="glass rounded-2xl p-5 flex flex-col overflow-hidden flex-1">
                     <h2 class="text-lg font-bold text-stone-100 mb-3 flex items-center gap-2">
                         <span class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
                             <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -619,15 +637,12 @@
 
                     <!-- Prompt Input -->
                     <div class="mb-3">
-                        <div class="relative">
-                            <textarea id="promptInput" rows="5" maxlength="1000"
-                                class="w-full p-3 rounded-t-xl input-field resize-none text-sm leading-relaxed scrollbar-styled"
-                                style="border-bottom-left-radius:0;border-bottom-right-radius:0;"
-                                placeholder="描述你想要的UI界面&#10;例如：极简风格的移动APP登录页面，包含logo、邮箱输入、密码输入、登录按钮..."></textarea>
-                        </div>
-
-                        <!-- 图片上传区域 + 优化按钮（textarea 下方工具栏，无间隙） -->
-                        <div class="flex items-center gap-2 flex-wrap px-3 py-2 bg-stone-800/40 rounded-b-xl border border-t-0 border-stone-700/40">
+                        <textarea id="promptInput" rows="5" maxlength="1000"
+                            class="w-full p-3 input-field resize-none text-sm leading-relaxed scrollbar-styled"
+                            style="border-radius:12px 12px 0 0;border-bottom:none;"
+                            placeholder="描述你想要的UI界面&#10;例如：极简风格的移动APP登录页面，包含logo、邮箱输入、密码输入、登录按钮..."></textarea>
+                        <!-- 图片上传区域 + 优化按钮（textarea 下方工具栏） -->
+                        <div class="flex items-center gap-2 flex-wrap pl-2 pr-3 py-2 bg-stone-800/40 border border-stone-700/40" style="border-radius:0 0 12px 12px;border-top:1px solid var(--border-subtle);">
                             <div id="referenceImagesContainer" class="flex items-center gap-2 flex-wrap"></div>
                             <input type="file" id="referenceImageInput" accept="image/*" class="hidden"
                                 onchange="handleImageUpload(event)" multiple>
@@ -651,7 +666,7 @@
                                     </svg>
                                 </span>
                             </button>
-                            <span class="ml-auto text-stone-600 text-xs font-mono"><span id="charCount">0</span><span class="text-stone-700">/1000</span></span>
+                            <span class="ml-auto text-xs font-mono"><span id="charCount" class="text-stone-500">0</span><span class="text-stone-600">/1000</span></span>
                         </div>
                     </div>
 
@@ -660,12 +675,12 @@
                         <label
                             class="text-stone-400 text-xs font-medium mb-1.5 block uppercase tracking-wider">快捷模板</label>
                         <div class="flex flex-wrap gap-2">
-                            <button onclick="useTemplate('dashboard')"
-                                class="text-xs bg-stone-800/50 hover:bg-stone-800 text-stone-400 hover:text-amber-500 font-medium px-3 py-1.5 rounded-lg transition border border-stone-700/50 hover:border-amber-500/30">理财仪表盘</button>
-                            <button onclick="useTemplate('search-result')"
-                                class="text-xs bg-stone-800/50 hover:bg-stone-800 text-stone-400 hover:text-amber-500 font-medium px-3 py-1.5 rounded-lg transition border border-stone-700/50 hover:border-amber-500/30">搜索场内</button>
-                            <button onclick="useTemplate('campaign')"
-                                class="text-xs bg-stone-800/50 hover:bg-stone-800 text-stone-400 hover:text-amber-500 font-medium px-3 py-1.5 rounded-lg transition border border-stone-700/50 hover:border-amber-500/30">运营活动</button>
+                            <button onclick="useTemplate('fixed-income')"
+                                class="text-xs bg-stone-800/50 hover:bg-stone-800 text-stone-400 hover:text-amber-500 font-medium px-3 py-1.5 rounded-lg transition border border-stone-700/50 hover:border-amber-500/30">固收+专区</button>
+                            <button onclick="useTemplate('vip-member')"
+                                class="text-xs bg-stone-800/50 hover:bg-stone-800 text-stone-400 hover:text-amber-500 font-medium px-3 py-1.5 rounded-lg transition border border-stone-700/50 hover:border-amber-500/30">理财会员</button>
+                            <button onclick="useTemplate('promo-campaign')"
+                                class="text-xs bg-stone-800/50 hover:bg-stone-800 text-stone-400 hover:text-amber-500 font-medium px-3 py-1.5 rounded-lg transition border border-stone-700/50 hover:border-amber-500/30">理财运营活动</button>
                         </div>
                     </div>
 
@@ -711,7 +726,7 @@
                                 全选
                             </button>
                         </div>
-                        <div class="overflow-y-auto scrollbar-styled pr-1 space-y-2 min-h-[80px]"
+                        <div class="overflow-y-auto scrollbar-styled pr-1 space-y-2 min-h-[80px] flex-1"
                             id="modelSelectionList">
                             <!-- 模型列表将在这里动态生成 -->
                         </div>
@@ -731,23 +746,29 @@
                 </div>
             </div>
 
-            <!-- Right: Results Panel -->
-            <div class="md:col-span-8">
-                <!-- Progress -->
-                <div id="progressSection" class="glass rounded-2xl p-6 mb-6 hidden">
-                    <h2 class="text-lg font-bold text-stone-100 mb-4 flex items-center gap-2">
-                        <div class="spinner w-5 h-5"></div>
-                        生成进度
-                    </h2>
-                    <div class="space-y-3" id="progressList"></div>
-                </div>
+            <!-- Resizable Divider -->
+            <div id="resizer" class="w-2 cursor-col-resize flex-shrink-0 group flex items-center justify-center hover:bg-amber-500/10 transition mx-1 rounded self-stretch"
+                title="拖动调整宽度">
+                <div class="w-0.5 h-12 bg-stone-700 group-hover:bg-amber-500 rounded transition"></div>
+            </div>
 
+            <!-- Right: Results Panel -->
+            <div id="rightColumn" class="flex-1 min-w-[400px] flex flex-col min-h-0" style="padding-bottom: 1.5rem;">
                 <!-- Results -->
-                <div id="resultsContainer" class="glass rounded-2xl p-6 flex flex-col">
-                    <div class="flex items-center justify-between mb-6">
+                <div id="resultsContainer" class="glass rounded-2xl flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <!-- 进度区（生成中时显示，嵌在容器顶部，不独占空间） -->
+                    <div id="progressSection" class="hidden flex-shrink-0 px-6 pt-5 pb-4 border-b border-stone-800/50">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="spinner w-4 h-4"></div>
+                            <span class="text-sm font-semibold text-stone-300">生成进度</span>
+                        </div>
+                        <div class="space-y-2" id="progressList"></div>
+                    </div>
+                    <!-- 固定头部 -->
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-stone-800/50 flex-shrink-0">
                         <h2 class="text-lg font-bold text-stone-100 flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor"
+                            <span class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
@@ -757,9 +778,11 @@
                             生成结果
                         </h2>
                     </div>
-                    <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-5 flex-1 items-start">
+                    <!-- 可滚动网格区域 -->
+                    <div class="overflow-y-auto scrollbar-dark flex-1 p-6">
+                    <div id="resultsGrid" class="grid gap-5 items-start" style="grid-template-columns: repeat(3, 1fr);">
                         <!-- Empty State -->
-                        <div class="col-span-2 flex items-center justify-center text-center min-h-[450px]">
+                        <div class="col-span-3 flex items-center justify-center text-center min-h-[450px]">
                             <div class="max-w-sm">
                                 <div
                                     class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-stone-800/50 flex items-center justify-center border border-stone-700/50">
@@ -775,6 +798,7 @@
                                 </p>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -953,38 +977,50 @@
 
     <!-- Image Preview Modal -->
     <div id="imageModal"
-        class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50 modal-backdrop flex-col gap-4"
+        class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50 modal-backdrop"
         onclick="if(event.target===this)closeImageModal()">
-        <div class="relative max-w-5xl max-h-[80vh] overflow-auto scrollbar-styled">
-            <button
-                class="absolute top-4 right-4 w-10 h-10 rounded-xl bg-stone-800/80 hover:bg-stone-700 flex items-center justify-center text-stone-400 hover:text-stone-200 transition z-10"
-                onclick="event.stopPropagation(); closeImageModal();">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
-            </button>
-            <img id="modalImage" src="" class="w-full">
-        </div>
-        <!-- 底部按钮 -->
-        <div id="imageModalFooter" class="flex gap-3">
-            <button id="modalCopyBtn"
-                class="flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
-                    </path>
-                </svg>
-                复制图片
-            </button>
-            <button id="modalDownloadBtn"
-                class="flex items-center gap-2 px-6 py-3 bg-stone-700 hover:bg-stone-600 text-stone-200 font-semibold rounded-xl transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                </svg>
-                下载图片
-            </button>
+        <div class="flex flex-row items-stretch gap-4 w-[92vw] max-w-[1400px] h-[95vh]">
+            <!-- 左：图片区 -->
+            <div class="flex-1 min-w-0 flex flex-col bg-[#0c0a09] rounded-2xl overflow-hidden">
+                <div class="flex-1 overflow-y-auto scrollbar-dark flex items-start justify-center" style="scrollbar-gutter:stable;">
+                    <img id="modalImage" src="" class="w-full block">
+                </div>
+            </div>
+            <!-- 右：说明区 -->
+            <div class="flex-1 min-w-0 flex flex-col gap-3">
+                <!-- 顶部：模型名 + 关闭 -->
+                <div class="flex items-center justify-between flex-shrink-0">
+                    <span class="text-stone-100 font-bold text-[15px]">图片详情</span>
+                    <button class="w-9 h-9 rounded-xl bg-[#292524] hover:bg-[#44403c] flex items-center justify-center text-stone-400 hover:text-stone-200 transition"
+                        onclick="event.stopPropagation(); closeImageModal();">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <!-- 说明区 -->
+                <div id="modalInfoPanel" class="flex-1 min-h-0 bg-[#1c1917]/80 rounded-2xl border border-white/[0.07] overflow-y-auto scrollbar-dark p-5" style="scrollbar-gutter:stable;">
+                </div>
+                <!-- 底部按钮 -->
+                <div class="flex flex-row gap-2 flex-shrink-0">
+                    <button id="modalCopyBtn"
+                        class="w-full flex items-center justify-center gap-2 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition text-[13px]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        复制图片
+                    </button>
+                    <button id="modalDownloadBtn"
+                        class="w-full flex items-center justify-center gap-2 py-3 bg-[#292524] border border-white/[0.08] hover:bg-[#44403c] text-stone-200 font-semibold rounded-xl transition text-[13px]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        下载图片
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1073,7 +1109,7 @@
             // 两阶段生成：文字模型生成描述 → 图片模型出图
             'fitai-flash-to-pro': {
                 name: 'Flash → Pro',
-                desc: '两阶段出图，读图',
+                desc: '两阶段，读图',
                 model: 'gemini-3.1-flash-lite',
                 imageModel: 'gemini-3-pro-image',
                 cost: 0,
@@ -1083,7 +1119,7 @@
             },
             'fitai-claude-to-pro': {
                 name: 'Claude → Pro',
-                desc: '两阶段出图，读图，代码强',
+                desc: '两阶段，代码强',
                 model: 'claude-sonnet-4-6',
                 imageModel: 'gemini-3-pro-image',
                 cost: 0,
@@ -1095,7 +1131,7 @@
             // 图片直出类（输出图片）
             'fitai-gemini-3.1-flash-image': {
                 name: 'Gemini 3.1 Flash',
-                desc: '直接出图，读图，快',
+                desc: '出图快',
                 model: 'gemini-3.1-flash-image',
                 cost: 0,
                 type: 'image',
@@ -1104,7 +1140,7 @@
             },
             'fitai-gemini-3-pro-image': {
                 name: 'Gemini 3 Pro',
-                desc: '直接出图，读图，质量高',
+                desc: '出图优',
                 model: 'gemini-3-pro-image',
                 cost: 0,
                 type: 'image',
@@ -1115,7 +1151,7 @@
             // 代码生成类（生成 HTML/CSS）
             'fitai-gemini-3.1-pro': {
                 name: 'Gemini 3.1 Pro',
-                desc: '生成代码，读图，960K上下文',
+                desc: '代码，960K',
                 model: 'gemini-3.1-pro',
                 cost: 0,
                 type: 'code',
@@ -1124,7 +1160,7 @@
             },
             'fitai-gemini-3.1-flash-lite': {
                 name: 'Gemini 3.1 Flash Lite',
-                desc: '生成代码，读图，快速',
+                desc: '代码快',
                 model: 'gemini-3.1-flash-lite',
                 cost: 0,
                 type: 'code',
@@ -1133,7 +1169,7 @@
             },
             'fitai-claude-sonnet': {
                 name: 'Claude Sonnet 4.6',
-                desc: '生成代码，读图，代码能力强',
+                desc: '代码强',
                 model: 'claude-sonnet-4-6',
                 cost: 0,
                 type: 'code',
@@ -1142,7 +1178,7 @@
             },
             'fitai-claude-opus': {
                 name: 'Claude Opus 4.6',
-                desc: '生成代码，读图，最强模型',
+                desc: '最强',
                 model: 'claude-opus-4-6',
                 cost: 0,
                 type: 'code',
@@ -1151,20 +1187,20 @@
             },
             'fitai-kimi': {
                 name: 'Kimi K2.5',
-                desc: '生成代码，读图，深度思考',
+                desc: '深思',
                 model: 'kimi-k2.5',
                 cost: 0,
                 type: 'code',
-                timeout: 100000,
+                timeout: 150000,  // 2.5分钟，深度思考需要更多时间
                 provider: 'fitai'
             },
             'fitai-gpt-5.4': {
                 name: 'GPT 5.4',
-                desc: '生成代码，896K上下文，不读图',
+                desc: '896K，不读图',
                 model: 'gpt-5.4',
                 cost: 0,
                 type: 'code',
-                timeout: 120000,
+                timeout: 180000,  // 3分钟，GPT响应较慢
                 provider: 'fitai',
                 noImageInput: true
             },
@@ -1175,8 +1211,9 @@
             login: '生成一个专业、可信的理财首页界面，整体风格克制、低饱和、偏长期投资。\n\n顶部为资产与行情概览区，展示总资产、昨日收益、累计收益，数字渐进加载，行情用细微动态线条表达。\n\n主体为基金产品列表，按指数、主动、固收+分区。单个产品卡片包含近一年收益、风险等级、波动特征，核心数据高亮，展开后显示更多参数，展开过程平滑自然。\n\n穿插理财资讯模块，以简洁信息流展示市场解读。\n\n设置基金经理卡片，展示从业年限、管理规模、代表产品，点击显示管理理念。\n\n底部或侧边为行情模块，支持指数切换，曲线动态重绘。\n\n整体交互自然流畅，信息层级清晰，强调可理解、可比较、可决策。',
             dashboard: '生成深色模式、科技感强的理财仪表盘，深灰＋霓虹蓝紫光效，信息边界用细线与微弱发光区分。顶部展示总资产、昨日收益、累计收益，数字能量条式渐进动画，收益波动以光线脉冲呈现。中部为资产分布仪表区（环形图/能量环），进入视图时依次点亮，点击资产分类后以折叠卡片展开并伴随光线扩散。右侧为风险与健康度模块（雷达图/评分卡），切换时光效淡入，高评分蓝光强调，低评分暗红提示。底部展示"调仓、买入、分析报告"入口，按钮带呼吸光效，保持稳健金融氛围。整体未来感、可视化强、交互克制。',
             profile: '基金详情页围绕"可理解、可比较、可决策"构建信息结构。顶部展示基金名称、类型标签（如指数/固收+），以及核心收益指标（近1年收益、今年以来、成立以来），数值以渐进加载动画呈现，并附带轻微涨跌动态线条，强调趋势感。\n\n页面中段为收益走势图，支持切换 1月 / 6月 / 1年 / 最大区间。切换时曲线动态重绘，并以淡入方式呈现。图下提供关键参数：最大回撤、波动率、夏普比率等，用于帮助用户快速判断风险收益特征。\n\n持仓结构模块采用可展开卡片，展示行业占比、重仓资产等，展开与收起动作带有轻微弹性动效。\n\n基金经理信息区以卡片形式呈现，从业年限、管理规模、代表产品及过往业绩，点击可查看更完整履历与管理理念。\n\n页面底部为固定操作区，提供"买入""定投"按钮。"买入"按钮轻微呼吸动效，用于强调主要行为入口。页面滑动时按钮吸附底部保持可见。整体交互克制，信息清晰，支持用户做出稳健的长期决策。',
-            'search-result': '用户搜索一只场内基金后，结果页展示该场内产品的基础信息，同时联动展示跟踪同一指数的场外对应产品。页面明确提示：场外申购更便捷、无开户门槛、费率更低，适合作为多数用户的买入选择；而场内需券商开户、交易机制复杂、存在溢价折价风险。\n\n在结果中，场外产品的"买入"按钮带有轻微的呼吸闪烁动效，引导用户优先选择场外申购；场内产品的买入按钮保持静态状态，减少误触与错误路径。整体强调透明对比、清晰引导、降低新手的交易复杂度。',
-            campaign: '生成一个春节喜庆的运营活动页面，橙红色调。活动内容为：买入理财产品得积分，积分能兑微信立减金。页面需包含理财产品卡片，卡片上应有图表展示该产品的运营数据或特点。整体设计要突出节日氛围和活动吸引力。'
+            'fixed-income': '设计一个理财 App 的「固收+专区」页面，移动端，风格稳健专业。核心是帮用户认识固收+（债券打底+权益增强的低波动产品），并能快速找到适合自己的固收+产品下单买入。并输出简短设计思路，说明布局、配色和核心交互的选择原因。',
+            'vip-member': '设计一个理财 App 的「理财会员」权益页，移动端，风格高级有质感。核心是展示会员等级体系与差异化特权，激励用户升级。',
+            'promo-campaign': '设计一个理财 App 的「运营活动」落地页，移动端。场景：新年理财季限时活动，新用户首投享高额现金奖励，老用户追加有加息券。页面需要有强烈的促销氛围感（红金配色、倒计时、奖励展示），同时保留信任感（合规说明、安全背书）。核心转化路径：看到活动 → 了解奖励 → 立即参与。'
         };
 
         // API Key 已移至服务器端（Vercel Serverless Function）
@@ -1276,18 +1313,18 @@
 
             container.innerHTML = '';
 
-            // 全部 FitAI 模型（2026-04）
+            // 全部 FitAI 模型（按推荐度排序）
             const defaultMainPageModels = [
+                'fitai-gemini-3.1-flash-image', // ⭐ 出图快，首选
+                'fitai-claude-sonnet',          // ⭐ 代码强，性价比
+                'fitai-gemini-3-pro-image',     // 出图优
+                'fitai-gemini-3.1-flash-lite',  // 代码快
+                'fitai-gpt-5.4',                // 长上下文
+                'fitai-gemini-3.1-pro',         // 960K
+                'fitai-kimi',                   // 深思
+                'fitai-claude-opus',            // 最强但慢
                 'fitai-flash-to-pro',           // 两阶段
                 'fitai-claude-to-pro',          // 两阶段
-                'fitai-gemini-3.1-flash-image', // 图片直出
-                'fitai-gemini-3-pro-image',     // 图片直出
-                'fitai-gemini-3.1-pro',         // 代码生成
-                'fitai-gemini-3.1-flash-lite',  // 代码生成
-                'fitai-claude-sonnet',          // 代码生成
-                'fitai-claude-opus',            // 代码生成
-                'fitai-kimi',                   // 代码生成
-                'fitai-gpt-5.4',                // 代码生成
             ];
 
             // 获取保存的选中模型
@@ -1325,20 +1362,74 @@
                 const typeEmoji = model.type === 'code' ? '💻' : model.type === 'image' ? '🖼️' : '📝';
 
                 const descDisplay = model.desc
-                    ? `<span class="text-stone-500 text-xs ml-2">${model.desc}</span>`
+                    ? `<span class="text-stone-500 text-xs ml-1.5">· ${model.desc}</span>`
                     : '';
 
                 label.innerHTML = `
                     <input type="checkbox" id="settings-model-${model.key}" class="mr-3" ${isChecked ? 'checked' : ''}>
                     <span class="mr-2 flex-shrink-0">${typeEmoji}</span>
-                    <div class="flex-1 min-w-0">
-                        <span class="text-stone-200 font-medium text-sm group-hover:text-stone-100 transition">${model.name}</span>
-                        ${descDisplay}
+                    <div class="flex-1 min-w-0 flex items-center">
+                        <span class="text-stone-200 font-medium text-sm group-hover:text-stone-100 transition">${model.name}</span>${descDisplay}
                     </div>
                 `;
 
                 container.appendChild(label);
             });
+        }
+
+        // 拖拽排序功能
+        function initDragSort(container) {
+            let draggedItem = null;
+
+            container.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('model-item')) {
+                    draggedItem = e.target;
+                    e.target.style.opacity = '0.5';
+                    e.dataTransfer.effectAllowed = 'move';
+                }
+            });
+
+            container.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('model-item')) {
+                    e.target.style.opacity = '1';
+                    draggedItem = null;
+                    // 保存新顺序
+                    saveModelOrder(container);
+                }
+            });
+
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                const afterElement = getDragAfterElement(container, e.clientY);
+                if (draggedItem) {
+                    if (afterElement == null) {
+                        container.appendChild(draggedItem);
+                    } else {
+                        container.insertBefore(draggedItem, afterElement);
+                    }
+                }
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.model-item:not([style*="opacity: 0.5"])')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function saveModelOrder(container) {
+            const items = container.querySelectorAll('.model-item');
+            const order = Array.from(items).map(item => item.dataset.modelKey);
+            localStorage.setItem('model_order', JSON.stringify(order));
+            console.log('✅ 模型顺序已保存:', order);
         }
 
         // 加载主界面的模型列表
@@ -1348,22 +1439,24 @@
 
             container.innerHTML = '';
 
-            // 主页面默认显示的模型列表（按效果好且快速优先排序）
+            // 主页面默认显示的模型列表（按推荐度排序）
             const defaultMainPageModels = [
-                'fitai-gemini-3.1-flash-image', // 图片直出，快
-                'fitai-gemini-3.1-flash-lite',  // 代码生成，快速
-                'fitai-claude-sonnet',          // 代码生成，代码能力强
-                'fitai-gpt-5.4',                // 代码生成，长上下文
-                'fitai-gemini-3-pro-image',     // 图片直出，质量高
-                'fitai-gemini-3.1-pro',         // 代码生成，960K上下文
-                'fitai-kimi',                   // 代码生成，深度思考
-                'fitai-claude-opus',            // 代码生成，最强
+                'fitai-gemini-3.1-flash-image', // ⭐ 出图快，首选
+                'fitai-claude-sonnet',          // ⭐ 代码强，性价比
+                'fitai-gemini-3-pro-image',     // 出图优
+                'fitai-gemini-3.1-flash-lite',  // 代码快
+                'fitai-gpt-5.4',                // 长上下文
+                'fitai-gemini-3.1-pro',         // 960K
+                'fitai-kimi',                   // 深思
+                'fitai-claude-opus',            // 最强但慢
                 'fitai-flash-to-pro',           // 两阶段
                 'fitai-claude-to-pro',          // 两阶段
             ];
 
             // 获取设置中保存的勾选状态
             const savedSelected = JSON.parse(localStorage.getItem('selected_models') || '[]');
+            // 获取自定义排序
+            const customOrder = JSON.parse(localStorage.getItem('model_order') || '[]');
 
             // 判断用户是否在设置中修改过模型选择
             // 如果保存的选择与默认6个完全相同，说明用户没有修改过
@@ -1372,9 +1465,21 @@
                 defaultMainPageModels.every(key => savedSelected.includes(key));
 
             // 确定要显示的模型列表
-            const availableModels = (savedSelected.length > 0 && !isDefaultSelection)
+            let availableModels = (savedSelected.length > 0 && !isDefaultSelection)
                 ? savedSelected.filter(key => MODEL_CONFIGS[key]) // 用户修改过，显示设置中选中的模型
                 : defaultMainPageModels.filter(key => MODEL_CONFIGS[key]); // 用户未修改，显示推荐的6个模型
+
+            // 应用自定义排序
+            if (customOrder.length > 0) {
+                availableModels = availableModels.sort((a, b) => {
+                    const indexA = customOrder.indexOf(a);
+                    const indexB = customOrder.indexOf(b);
+                    if (indexA === -1 && indexB === -1) return 0;
+                    if (indexA === -1) return 1;
+                    if (indexB === -1) return -1;
+                    return indexA - indexB;
+                });
+            }
 
             if (availableModels.length === 0) {
                 container.innerHTML = '<div class="text-stone-500 text-sm p-3">请在设置中选择至少一个模型</div>';
@@ -1384,7 +1489,7 @@
             // 获取上次生成时的选择（如果有）
             const lastGenerationModels = JSON.parse(localStorage.getItem('last_generation_models') || '[]');
 
-            // 获取可用模型，保持 availableModels 中的顺序（已按效果/速度排好）
+            // 获取可用模型，保持 availableModels 中的顺序
             const sortedModels = availableModels
                 .map(key => ({
                     key: key,
@@ -1415,37 +1520,35 @@
                 }
             }
 
-            // 生成模型选择项（只显示可用模型）
+            // 生成模型选择项（只显示可用模型，支持拖拽排序）
             sortedModels.forEach(model => {
-                const label = document.createElement('label');
-                label.className = 'flex items-center bg-stone-800/30 hover:bg-stone-800/60 p-2.5 rounded-lg cursor-pointer transition border border-stone-700/30 hover:border-stone-600/50 group';
+                const item = document.createElement('div');
+                item.className = 'model-item flex items-center bg-stone-800/30 hover:bg-stone-800/60 p-2.5 rounded-lg transition border border-stone-700/30 hover:border-stone-600/50 group';
+                item.draggable = true;
+                item.dataset.modelKey = model.key;
 
                 // 默认勾选（全部勾选或使用上次选择）
                 const isChecked = defaultChecked.includes(model.key);
 
-                const typeIcon = model.type === 'code'
-                    ? '<svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>'
-                    : model.type === 'image'
-                        ? '<svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>'
-                        : '<svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
-
                 const typeEmoji = model.type === 'code' ? '💻' : model.type === 'image' ? '🖼️' : '📝';
 
                 const descDisplay = model.desc
-                    ? `<span class="text-stone-500 text-[11px] block">${model.desc}</span>`
+                    ? `<span class="text-stone-500 text-[11px] ml-1.5">· ${model.desc}</span>`
                     : '';
 
-                label.innerHTML = `
-                    <input type="checkbox" id="model-${model.key}" class="mr-2.5 flex-shrink-0 self-center" ${isChecked ? 'checked' : ''}>
-                    <span class="mr-1.5 flex-shrink-0" style="font-size:14px;line-height:1.4;align-self:flex-start;margin-top:2px;">${typeEmoji}</span>
-                    <div class="flex-1 min-w-0">
-                        <span class="text-stone-300 font-medium text-sm group-hover:text-stone-100 transition">${model.name}</span>
-                        ${descDisplay}
-                    </div>
-            `;
+                item.innerHTML = `
+                    <label class="flex items-center flex-1 cursor-pointer">
+                        <input type="checkbox" id="model-${model.key}" class="mr-2.5 flex-shrink-0" ${isChecked ? 'checked' : ''}>
+                        <span class="mr-1.5 flex-shrink-0" style="font-size:14px;">${typeEmoji}</span>
+                        <div class="flex-1 min-w-0 flex items-center">
+                            <span class="text-stone-300 font-medium text-sm group-hover:text-stone-100 transition">${model.name}</span>${descDisplay}
+                        </div>
+                    </label>
+                    <span class="drag-handle cursor-grab active:cursor-grabbing text-stone-600 hover:text-stone-400 ml-2 flex-shrink-0">⋮⋮</span>
+                `;
 
                 // 添加事件监听
-                const checkbox = label.querySelector('input');
+                const checkbox = item.querySelector('input');
                 checkbox.addEventListener('change', () => {
                     updateCostEstimate();
                     saveLastGenerationModels(); // 保存当前选择
@@ -1455,8 +1558,11 @@
                     if (btn) btn.textContent = Array.from(allCbs).every(cb => cb.checked) ? '全不选' : '全选';
                 });
 
-                container.appendChild(label);
+                container.appendChild(item);
             });
+
+            // 初始化拖拽排序
+            initDragSort(container);
 
             // 更新成本估算
             updateCostEstimate();
@@ -1480,15 +1586,16 @@
             saveLastGenerationModels();
         }
 
-        // 保存上次生成时的模型选择
+        // 保存上次生成时的模型选择（按 DOM 顺序）
         function saveLastGenerationModels() {
             const selectedModels = [];
-            for (let key in MODEL_CONFIGS) {
-                const checkbox = document.getElementById(`model-${key}`);
+            const modelItems = document.querySelectorAll('#modelSelectionList .model-item');
+            modelItems.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
                 if (checkbox && checkbox.checked) {
-                    selectedModels.push(key);
+                    selectedModels.push(item.dataset.modelKey);
                 }
-            }
+            });
             localStorage.setItem('last_generation_models', JSON.stringify(selectedModels));
         }
 
@@ -1543,7 +1650,72 @@
                 syncResultsHeight();
                 adjustModelListHeight();
             });
+
+            // 初始化拖拽分隔条
+            initResizer();
         };
+
+        // 拖拽调整左右面板宽度
+        function initResizer() {
+            const resizer = document.getElementById('resizer');
+            const leftColumn = document.getElementById('leftColumn');
+            if (!resizer || !leftColumn) return;
+
+            let isResizing = false;
+            let startX, startWidth;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX;
+                startWidth = leftColumn.offsetWidth;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const delta = e.clientX - startX;
+                const newWidth = Math.min(Math.max(startWidth + delta, 280), 600);
+                leftColumn.style.width = newWidth + 'px';
+                // 保存到 localStorage
+                localStorage.setItem('left_panel_width', newWidth);
+                updateResultsGridCols();
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+
+            // 恢复保存的宽度
+            const savedWidth = localStorage.getItem('left_panel_width');
+            if (savedWidth) {
+                leftColumn.style.width = savedWidth + 'px';
+            }
+
+            // 自适应列数
+            const rightColumn = document.getElementById('rightColumn');
+            if (rightColumn && window.ResizeObserver) {
+                new ResizeObserver(() => updateResultsGridCols()).observe(rightColumn);
+            }
+            updateResultsGridCols();
+        }
+
+        // 根据右侧区域宽度自动决定结果网格列数（最少1列，最多3列）
+        function updateResultsGridCols() {
+            const grid = document.getElementById('resultsGrid');
+            const rightColumn = document.getElementById('rightColumn');
+            if (!grid || !rightColumn) return;
+            const w = rightColumn.offsetWidth;
+            let cols;
+            if (w >= 1100) cols = 3;
+            else if (w >= 600) cols = 2;
+            else cols = 1;
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        }
 
         // 基准高度：首次同步后固定，不随内容减少
         let baselineResultsHeight = 0;
@@ -1563,9 +1735,23 @@
         }
 
 
-        // 字符计数
-        document.getElementById('promptInput').addEventListener('input', (e) => {
+        // 字符计数（处理中文输入法，拼音不计数）
+        let isComposing = false;
+        const promptInput = document.getElementById('promptInput');
+
+        promptInput.addEventListener('compositionstart', () => {
+            isComposing = true;
+        });
+
+        promptInput.addEventListener('compositionend', () => {
+            isComposing = false;
             updateCharCount();
+        });
+
+        promptInput.addEventListener('input', (e) => {
+            if (!isComposing) {
+                updateCharCount();
+            }
         });
 
         // 支持粘贴图片（Cmd+V / Ctrl+V）
@@ -1624,13 +1810,15 @@
             if (count > 1000) {
                 input.value = input.value.substring(0, 1000);
                 charCountElement.textContent = 1000;
-                parentElement.className = 'absolute bottom-4 right-4 text-red-400 text-xs font-mono font-semibold';
+                charCountElement.className = 'text-red-400 font-semibold';
             } else {
                 charCountElement.textContent = count;
-                if (count > 450) {
-                    parentElement.className = 'absolute bottom-4 right-4 text-amber-400 text-xs font-mono';
+                if (count > 900) {
+                    charCountElement.className = 'text-red-400';
+                } else if (count > 700) {
+                    charCountElement.className = 'text-amber-400';
                 } else {
-                    parentElement.className = 'absolute bottom-4 right-4 text-stone-600 text-xs font-mono';
+                    charCountElement.className = 'text-stone-500';
                 }
             }
         }
@@ -1832,15 +2020,15 @@
                 return;
             }
 
-            // 获取选中的模型
-            // 从主界面获取当前勾选的模型
+            // 获取选中的模型（按 DOM 顺序，即用户拖拽排序后的顺序）
             const selectedModels = [];
-            for (let key in MODEL_CONFIGS) {
-                const checkbox = document.getElementById(`model-${key}`);
+            const modelItems = document.querySelectorAll('#modelSelectionList .model-item');
+            modelItems.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
                 if (checkbox && checkbox.checked) {
-                    selectedModels.push(key);
+                    selectedModels.push(item.dataset.modelKey);
                 }
-            }
+            });
 
             if (selectedModels.length === 0) {
                 alert('⚠️ 请至少选择一个模型');
@@ -1946,27 +2134,47 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             const MAX_CONCURRENT = 4; // 最多同时4个请求
             const REQUEST_DELAY = 300; // 每个请求之间延迟300ms
 
-            // 分批处理请求，控制并发数量
-            const processInBatches = async (items, batchSize, delay) => {
-                const results = [];
-                for (let i = 0; i < items.length; i += batchSize) {
-                    const batch = items.slice(i, i + batchSize);
-                    const batchPromises = batch.map(async (modelKey, index) => {
-                        // 每个请求之间添加延迟，避免同时发起
-                        if (index > 0) {
-                            await new Promise(resolve => setTimeout(resolve, delay));
+            // 滑动窗口并发控制：完成一个立即补一个，不等整批完成
+            const processSlidingWindow = async (items, maxConcurrent, delay) => {
+                const results = new Array(items.length);
+                let nextIndex = 0;
+                let completedCount = 0;
+
+                return new Promise((resolve) => {
+                    const startTask = async (index) => {
+                        const modelKey = items[index];
+                        try {
+                            const result = await generateWithModel(modelKey, optimizedPrompt, platform);
+                            results[index] = { status: 'fulfilled', value: result };
+                        } catch (error) {
+                            results[index] = { status: 'rejected', reason: error };
                         }
-                        return generateWithModel(modelKey, optimizedPrompt, platform);
-                    });
-                    const batchResults = await Promise.allSettled(batchPromises);
-                    results.push(...batchResults);
-                }
-                return results;
+                        completedCount++;
+
+                        // 完成一个，立即启动下一个
+                        if (nextIndex < items.length) {
+                            const newIndex = nextIndex++;
+                            setTimeout(() => startTask(newIndex), delay);
+                        }
+
+                        // 全部完成
+                        if (completedCount === items.length) {
+                            resolve(results);
+                        }
+                    };
+
+                    // 启动初始批次（最多 maxConcurrent 个）
+                    const initialBatch = Math.min(maxConcurrent, items.length);
+                    for (let i = 0; i < initialBatch; i++) {
+                        nextIndex = i + 1;
+                        setTimeout(() => startTask(i), i * delay);
+                    }
+                });
             };
 
             try {
-                // 分批处理，控制并发数量
-                const results = await processInBatches(selectedModels, MAX_CONCURRENT, REQUEST_DELAY);
+                // 滑动窗口处理，完成一个立即补一个
+                const results = await processSlidingWindow(selectedModels, MAX_CONCURRENT, REQUEST_DELAY);
 
                 // 从 Promise 结果中提取实际的结果数据
                 const allResults = results
@@ -2155,6 +2363,11 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                         actualCost = descResult.actualCost !== null ? descResult.actualCost : actualCost;
                     } else {
                         description = descResult;
+                    }
+
+                    // 将中间描述文字保存为 codeContent，供右侧面板展示设计思路
+                    if (description) {
+                        codeContent = `<!-- image-description: ${description} -->`;
                     }
 
                     // 使用配置中指定的图片模型，默认使用 FitAI 的 gemini-3-pro-image
@@ -2849,7 +3062,20 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 7. 代码要包含所有必要的样式和交互功能
 8. 使用内联样式或 <style> 标签，确保代码可以独立运行
 9. 优先保证代码质量和功能完整性，避免不必要的冗余代码
+9.5. 【交互样式要求】所有按钮、链接等交互元素的 hover/active/focus 状态，必须保证文字始终可见：hover 时若改变背景色，必须同时显式设置对比度足够的文字颜色（如深色背景配白色文字、浅色背景配深色文字），严禁出现文字与背景色相近导致不可见的情况
 10. 界面中所有需要图片的地方，使用 https://loremflickr.com/{width}/{height}/{keyword} 作为 src，keyword 根据 UI 场景选择最相关的英文单词（例如：finance、food、travel、shopping、music、sport、nature、city、fashion、health 等），不要使用纯色块或 CSS 渐变代替图片
+11. 【重要】图表要求：任何需要展示数据趋势、统计、分析的区域（如折线图、柱状图、饼图、雷达图、仪表盘等），必须：
+    - 在 head 中引入 Chart.js（不加 defer/async）：<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+    - canvas 不要写 width/height 属性，让 Chart.js responsive:true 自动适配父容器宽度
+    - 每个 canvas 都必须包裹在带显式高度的父容器中，使用这种结构：<div style='height:260px;width:100%;position:relative'><canvas id='c'></canvas></div>
+    - 在页面最底部（</body> 之前）用独立 <script> 初始化 Chart 实例，必须放在 window.onload 或 document.addEventListener('DOMContentLoaded', ...) 回调中，例如：
+      window.onload = function() { new Chart(document.getElementById('myChart'), { type: 'bar', data: {...}, options: { responsive: true, maintainAspectRatio: false } }); }
+    - options 必须包含 responsive: true 和 maintainAspectRatio: false
+    - 示例数据要符合场景（如天气用温度数据、财务用金额数据）
+    - 绝对不能留空白区域或只写注释占位，必须渲染出可见的图表
+12. 地图类需求：使用静态地图图片占位，标注"地图区域"
+13. 【设计思路】在 HTML 代码末尾（</html> 之前）添加如下注释，简要说明布局、配色和核心交互的选择原因（2-4句话即可）：
+    <!-- design-rationale: 在此填写设计思路 -->
 
 请直接输出完整的 HTML 代码，不要包含任何解释文字、markdown 代码块标记（如 \`\`\`html 或 \`\`\`）或任何其他文本，只输出纯 HTML 代码。保持代码简洁，在保证功能的前提下尽量精简。`;
 
@@ -3193,7 +3419,7 @@ ${code}
             infoDiv.innerHTML = `
                 <div class="flex justify-between items-center">
                     <span class="text-stone-200 font-semibold text-sm">${config.name}</span>
-                    <span class="text-stone-500 text-xs font-mono">$${config.cost.toFixed(4)}</span>
+
                 </div>
             `;
 
@@ -3202,23 +3428,58 @@ ${code}
             document.getElementById('resultsGrid').appendChild(card);
         }
 
-        // 将卡片状态从"排队中"切换为"生成中"
+        // 存储计时器引用
+        const cardTimers = {};
+
+        // 将卡片状态从"排队中"切换为"生成中"（带计时器）
         function setCardGenerating(modelKey) {
             const statusDiv = document.getElementById(`result-status-${modelKey}`);
             if (!statusDiv) return;
             const config = MODEL_CONFIGS[modelKey];
+            const startTime = Date.now();
+
             statusDiv.innerHTML = `
                 <div class="text-center">
                     <div class="spinner mx-auto mb-4"></div>
                     <div class="text-stone-300 text-sm font-medium mb-1">${config ? config.name : modelKey}</div>
-                    <div class="text-amber-400/80 text-xs font-medium tracking-wide">生成中...</div>
+                    <div class="text-amber-400/80 text-xs font-medium tracking-wide">
+                        生成中... <span id="timer-${modelKey}" class="font-mono">0s</span>
+                    </div>
                 </div>
             `;
+
+            // 启动计时器
+            cardTimers[modelKey] = setInterval(() => {
+                const timerEl = document.getElementById(`timer-${modelKey}`);
+                if (timerEl) {
+                    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                    timerEl.textContent = `${elapsed}s`;
+                    // 超过60秒显示警告色
+                    if (elapsed > 60) {
+                        timerEl.className = 'font-mono text-red-400';
+                    }
+                } else {
+                    // 元素不存在了，清除计时器
+                    clearInterval(cardTimers[modelKey]);
+                    delete cardTimers[modelKey];
+                }
+            }, 1000);
+        }
+
+        // 停止卡片计时器
+        function stopCardTimer(modelKey) {
+            if (cardTimers[modelKey]) {
+                clearInterval(cardTimers[modelKey]);
+                delete cardTimers[modelKey];
+            }
         }
 
 
         // 更新结果卡片状态
         function updateResultCard(modelKey, imageUrl = null, codeContent = null, isError = false, errorMsg = '', actualCost = null) {
+            // 停止计时器
+            stopCardTimer(modelKey);
+
             const card = document.getElementById(`result-card-${modelKey}`);
             if (!card) {
                 console.warn(`Card not found for model: ${modelKey}`);
@@ -3252,7 +3513,7 @@ ${code}
                 infoDiv.innerHTML = `
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-stone-200 font-semibold text-sm">${config.name}</span>
-                        <span class="text-stone-500 text-xs font-mono">$${displayCost.toFixed(4)}</span>
+
                     </div>
                     <button class="retry-btn w-full bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-sm py-2.5 rounded-lg transition flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -3261,14 +3522,24 @@ ${code}
                 `;
                 infoDiv.querySelector('.retry-btn').onclick = async (e) => {
                     const btn = e.currentTarget;
-                    const origInner = btn.innerHTML;
                     btn.disabled = true;
                     btn.innerHTML = '<div class="spinner w-4 h-4"></div><span>重试中...</span>';
+
+                    // 更新卡片主体为生成中状态
+                    errorDiv.innerHTML = `
+                        <div class="text-center">
+                            <div class="spinner mx-auto mb-4"></div>
+                            <div class="text-stone-300 text-sm font-medium mb-1">${config.name}</div>
+                            <div class="text-amber-400/80 text-xs font-medium tracking-wide">生成中...</div>
+                        </div>
+                    `;
+                    errorDiv.className = 'bg-stone-900/50 flex items-center justify-center p-6 flex-1';
+
                     try {
                         await retryModel(config.name);
-                    } finally {
-                        btn.disabled = false;
-                        btn.innerHTML = origInner;
+                    } catch (err) {
+                        // 如果重试失败，恢复错误状态
+                        console.error('重试失败:', err);
                     }
                 };
 
@@ -3304,23 +3575,48 @@ ${code}
                 const platformRadio = document.querySelector('input[name="platform"]:checked');
                 const currentPlatform = platformRadio ? platformRadio.value : 'mobile';
 
+                // Fill the card width; for mobile simulate 375px logical width scaled to fit
                 if (currentPlatform === 'mobile') {
-                    iframe.style.width = '280px';
-                    iframe.style.height = '380px';
-                    iframe.width = '375';
-                    iframe.height = '500';
-                    iframe.style.transform = 'scale(0.75)';
-                    iframe.style.transformOrigin = 'center center';
+                    const LOGICAL_W = 375;
+                    const LOGICAL_H = 667;
+                    iframe.width = LOGICAL_W;
+                    iframe.height = LOGICAL_H;
+                    iframe.style.width = LOGICAL_W + 'px';
+                    iframe.style.height = LOGICAL_H + 'px';
+                    // Scale to fill card — actual card width is queried after append
+                    iframe.style.transformOrigin = 'top left';
+                    iframe.style.flexShrink = '0';
+                    // We'll apply scale in onload after we know the container width
                 } else {
                     iframe.style.width = '100%';
                     iframe.style.height = '100%';
-                    iframe.style.maxWidth = '800px';
                 }
 
-                iframe.srcdoc = codeContent;
+                // Wrap iframe in a scaling container that fills the previewArea
+                const iframeWrapper = document.createElement('div');
+                iframeWrapper.style.cssText = 'width:100%;height:100%;overflow:hidden;position:relative;';
+                iframeWrapper.appendChild(iframe);
+                previewArea.appendChild(iframeWrapper);
+
+                iframe.srcdoc = injectChartShim(codeContent);
 
                 iframe.onload = () => {
                     setTimeout(() => {
+                        if (currentPlatform === 'mobile') {
+                            const containerW = iframeWrapper.offsetWidth || 320;
+                            const containerH = iframeWrapper.offsetHeight || 460;
+                            const LOGICAL_W = 375;
+                            const LOGICAL_H = 667;
+                            const scaleX = containerW / LOGICAL_W;
+                            const scaleY = containerH / LOGICAL_H;
+                            const scale = Math.min(scaleX, scaleY);
+                            iframe.style.transform = `scale(${scale})`;
+                            // Center horizontally if there's leftover space
+                            const offsetX = (containerW - LOGICAL_W * scale) / 2;
+                            const offsetY = (containerH - LOGICAL_H * scale) / 2;
+                            iframe.style.marginLeft = offsetX + 'px';
+                            iframe.style.marginTop = offsetY + 'px';
+                        }
                         iframe.style.opacity = '1';
                         if (previewArea.contains(loadingDiv)) {
                             previewArea.removeChild(loadingDiv);
@@ -3328,13 +3624,12 @@ ${code}
 
                         try {
                             const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                            // 仅隐藏滚动条，不强制 height:100%（否则会压缩 canvas 高度导致图表不渲染）
                             if (iframeDoc && iframeDoc.body) {
                                 iframeDoc.body.style.overflow = 'hidden';
-                                iframeDoc.body.style.height = '100%';
                             }
                             if (iframeDoc && iframeDoc.documentElement) {
                                 iframeDoc.documentElement.style.overflow = 'hidden';
-                                iframeDoc.documentElement.style.height = '100%';
                             }
                         } catch (e) {
                             // 跨域限制，忽略
@@ -3348,7 +3643,7 @@ ${code}
                     }
                 };
 
-                previewArea.appendChild(iframe);
+                // iframe already appended inside iframeWrapper above
                 previewArea.onclick = (e) => {
                     e.stopPropagation();
                     const platformRadio = document.querySelector('input[name="platform"]:checked');
@@ -3363,7 +3658,7 @@ ${code}
                 infoDiv.innerHTML = `
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-stone-200 font-semibold text-sm">${config.name}</span>
-                        <span class="text-stone-500 text-xs font-mono">$${displayCost.toFixed(4)}</span>
+
                     </div>
                     <div class="flex gap-2">
                         <button class="code-copy-btn flex-1 bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
@@ -3482,7 +3777,7 @@ ${code}
                     infoDiv.innerHTML = `
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-stone-200 font-semibold text-sm">${config.name}</span>
-                            <span class="text-stone-500 text-xs font-mono">$${displayCost.toFixed(4)}</span>
+    
                         </div>
                         <div class="flex gap-2">
                             <button class="copy-img-btn flex-1 bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
@@ -3513,7 +3808,7 @@ ${code}
                     card.appendChild(imgContainer);
                     card.appendChild(infoDiv);
                     card.style.cursor = 'pointer';
-                    card.onclick = () => showImageModal(imageUrl);
+                    card.onclick = () => showImageModal(imageUrl, config.name, displayCost, codeContent);
                 }
             }
         }
@@ -3545,7 +3840,7 @@ ${code}
                 infoDiv.innerHTML = `
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-stone-200 font-semibold text-sm">${modelName}</span>
-                        <span class="text-stone-500 text-xs font-mono">$${cost.toFixed(2)}</span>
+
                     </div>
                     <button class="w-full bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-sm py-2.5 rounded-lg transition flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -3604,22 +3899,36 @@ ${code}
                     const currentPlatform = platformRadio ? platformRadio.value : 'mobile';
 
                     if (currentPlatform === 'mobile') {
-                        iframe.style.width = '280px';
-                        iframe.style.height = '380px';
-                        iframe.width = '375';
-                        iframe.height = '500';
-                        iframe.style.transform = 'scale(0.75)';
-                        iframe.style.transformOrigin = 'center center';
+                        const LOGICAL_W = 375;
+                        const LOGICAL_H = 667;
+                        iframe.width = LOGICAL_W;
+                        iframe.height = LOGICAL_H;
+                        iframe.style.width = LOGICAL_W + 'px';
+                        iframe.style.height = LOGICAL_H + 'px';
+                        iframe.style.transformOrigin = 'top left';
+                        iframe.style.flexShrink = '0';
                     } else {
                         iframe.style.width = '100%';
                         iframe.style.height = '100%';
-                        iframe.style.maxWidth = '800px';
                     }
 
-                    iframe.srcdoc = codeContent;
+                    const iframeWrapper2 = document.createElement('div');
+                    iframeWrapper2.style.cssText = 'width:100%;height:100%;overflow:hidden;position:relative;';
+                    iframeWrapper2.appendChild(iframe);
+                    previewArea.appendChild(iframeWrapper2);
+
+                    iframe.srcdoc = injectChartShim(codeContent);
 
                     iframe.onload = () => {
                         setTimeout(() => {
+                            if (currentPlatform === 'mobile') {
+                                const containerW2 = iframeWrapper2.offsetWidth || 320;
+                                const containerH2 = iframeWrapper2.offsetHeight || 460;
+                                const scale2 = Math.min(containerW2 / 375, containerH2 / 667);
+                                iframe.style.transform = `scale(${scale2})`;
+                                iframe.style.marginLeft = ((containerW2 - 375 * scale2) / 2) + 'px';
+                                iframe.style.marginTop = ((containerH2 - 667 * scale2) / 2) + 'px';
+                            }
                             iframe.style.opacity = '1';
                             if (previewArea.contains(loadingDiv)) {
                                 previewArea.removeChild(loadingDiv);
@@ -3627,13 +3936,12 @@ ${code}
 
                             try {
                                 const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                                // 仅隐藏滚动条，不强制 height:100%（否则会压缩 canvas 高度导致图表不渲染）
                                 if (iframeDoc && iframeDoc.body) {
                                     iframeDoc.body.style.overflow = 'hidden';
-                                    iframeDoc.body.style.height = '100%';
                                 }
                                 if (iframeDoc && iframeDoc.documentElement) {
                                     iframeDoc.documentElement.style.overflow = 'hidden';
-                                    iframeDoc.documentElement.style.height = '100%';
                                 }
                             } catch (e) {
                                 // 跨域限制，忽略
@@ -3647,7 +3955,6 @@ ${code}
                         }
                     };
 
-                    previewArea.appendChild(iframe);
                     previewArea.style.cursor = 'pointer';
                     previewArea.onclick = (e) => {
                         e.stopPropagation();
@@ -3665,7 +3972,7 @@ ${code}
                     infoDiv.innerHTML = `
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-stone-200 font-semibold text-sm">${modelName}</span>
-                            <span class="text-stone-500 text-xs font-mono">$${cost.toFixed(2)}</span>
+    
                         </div>
                         <div class="flex gap-2">
                             <button class="flex-1 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
@@ -3775,7 +4082,7 @@ ${code}
                     infoDiv.innerHTML = `
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-stone-200 font-semibold text-sm">${modelName}</span>
-                            <span class="text-stone-500 text-xs font-mono">$${cost.toFixed(2)}</span>
+    
                         </div>
                         <div class="flex gap-2">
                             <button class="flex-1 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5">
@@ -3795,7 +4102,7 @@ ${code}
                     card.appendChild(infoDiv);
 
                     card.style.cursor = 'pointer';
-                    card.onclick = () => showImageModal(imageUrl);
+                    card.onclick = () => showImageModal(imageUrl, modelName, cost, codeContent);
 
                 } else {
                     // 不是图片格式
@@ -3821,7 +4128,7 @@ ${code}
                     infoDiv.innerHTML = `
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-stone-200 font-semibold text-sm">${modelName}</span>
-                            <span class="text-stone-500 text-xs font-mono">$${cost.toFixed(2)}</span>
+    
                         </div>
                         <button class="w-full bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium text-sm py-2.5 rounded-lg transition flex items-center justify-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -3873,7 +4180,7 @@ ${code}
             });
         }
 
-        function retryModel(modelName) {
+        async function retryModel(modelName) {
             // 找到对应的模型key
             const modelKey = Object.keys(MODEL_CONFIGS).find(
                 key => MODEL_CONFIGS[key].name === modelName
@@ -3912,13 +4219,252 @@ Design constraints:
 
 Avoid: 3D elements, realistic photos, cartoon style`;
 
-            generateWithModel(modelKey, optimizedPrompt, platform);
+            // 更新卡片状态为生成中
+            setCardGenerating(modelKey);
+
+            // 等待生成完成
+            return await generateWithModel(modelKey, optimizedPrompt, platform);
         }
 
-        function showImageModal(imageUrl) {
+        // ── 为生成的 HTML 注入 Chart.js 等待 shim ──
+        // 问题：Canvas 在 srcdoc iframe 里被压缩为 0px 高度，Chart.js 无法渲染
+        // 解法：window.load 之后找出所有 canvas，补高度，再调 Chart.getChart().resize()
+        function injectChartShim(html) {
+            if (!html || typeof html !== 'string') return html;
+            if (!/chart\.js/i.test(html)) return html;
+
+            const shim = `<style>canvas { display: block !important; }</style>
+\x3cscript>
+(function() {
+    function fixCharts() {
+        try {
+            if (typeof Chart === 'undefined') return;
+            document.querySelectorAll('canvas').forEach(function(canvas) {
+                // ★ 只修已经坏的（高度为 0），正常渲染的绝不干预
+                if (canvas.offsetHeight > 10) return;
+                var chart = Chart.getChart(canvas);
+                if (!chart) return;
+                var parent = canvas.parentElement;
+                var attrH = parseInt(canvas.getAttribute('height'));
+                var h = attrH > 20 ? attrH : 260;
+                var attrW = parseInt(canvas.getAttribute('width'));
+                var parentW = parent ? parent.offsetWidth : 0;
+                var w = attrW > 20 ? attrW : (parentW > 20 ? parentW : 380);
+                if (parent) { parent.style.height = h + 'px'; parent.style.minHeight = h + 'px'; }
+                canvas.style.height = h + 'px';
+                chart.resize(w, h);
+            });
+        } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(fixCharts, 100);
+        setTimeout(fixCharts, 400);
+    });
+    window.addEventListener('load', function() {
+        fixCharts();
+        setTimeout(fixCharts, 200);
+        setTimeout(fixCharts, 800);
+    });
+})();
+<\/script>`;
+
+            // 注入到 <head> 最开头
+            if (/<head[^>]*>/i.test(html)) {
+                return html.replace(/(<head[^>]*>)/i, '$1' + shim);
+            }
+            // 没有 <head>，注入到开头
+            return shim + html;
+        }
+
+        // ── 从 codeContent 提取设计分析，返回右侧面板 HTML ──
+        function buildCodeAnalysisHtml(codeContent) {
+            if (!codeContent) return '<div style="color:#44403c;font-size:13px;text-align:center;padding:40px 0;">暂无代码内容</div>';
+
+            // 检测是否为两阶段图片生成的中间描述文字
+            const imageDescMatch = codeContent.match(/^<!--\s*image-description:([\s\S]*?)-->\s*$/i);
+            if (imageDescMatch) {
+                const descText = imageDescMatch[1].trim();
+                return `
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div style="padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">设计思路</div>
+                        <p style="color:#d6d3d1;font-size:13px;line-height:1.75;margin:0;">${descText.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>
+                    </div>
+                    <div style="padding:10px 16px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
+                        <span style="color:#57534e;font-size:11px;">此内容由文字模型生成后交由图片模型渲染，无法提取配色 / 组件等代码级信息</span>
+                    </div>
+                </div>`;
+            }
+
+            // 1. 设计思路
+            const rationaleMatch = codeContent.match(/<!--\s*design-rationale:([\s\S]*?)-->/i);
+            const rationaleText = (rationaleMatch && rationaleMatch[1].trim()) || '';
+
+            // 2. 配色（hex，过滤极黑极白）
+            const colorSet = new Set();
+            const hexReg = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
+            let m;
+            while ((m = hexReg.exec(codeContent)) !== null && colorSet.size < 10) {
+                const raw = m[0];
+                const h = raw.length === 4
+                    ? '#' + raw[1]+raw[1]+raw[2]+raw[2]+raw[3]+raw[3]
+                    : raw.toLowerCase();
+                const r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+                const brightness = (r*299 + g*587 + b*114) / 1000;
+                if (brightness > 12 && brightness < 243) colorSet.add(h);
+            }
+            // 若 hex 不够则补 rgb
+            if (colorSet.size < 2) {
+                const rgbReg = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[\d.]+)?\s*\)/g;
+                while ((m = rgbReg.exec(codeContent)) !== null && colorSet.size < 8) {
+                    const r=+m[1],g=+m[2],b=+m[3];
+                    const brightness = (r*299+g*587+b*114)/1000;
+                    if (brightness > 12 && brightness < 243) {
+                        const hx = '#' + [r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+                        colorSet.add(hx);
+                    }
+                }
+            }
+
+            // 3. 字体（font-family 里提取非通用字体）
+            const fontSet = new Set();
+            const fontReg = /font-family\s*:\s*([^;}"']+)/gi;
+            const genericFonts = new Set(['sans-serif','serif','monospace','cursive','fantasy','system-ui','inherit','initial','unset','var(--font-sans)']);
+            while ((m = fontReg.exec(codeContent)) !== null) {
+                m[1].split(',').forEach(f => {
+                    const clean = f.trim().replace(/['"]/g,'').split('(')[0].trim();
+                    if (clean && !genericFonts.has(clean.toLowerCase()) && clean.length < 40) fontSet.add(clean);
+                });
+            }
+
+            // 4. 组件检测
+            const componentChecks = [
+                { label: '按钮',   re: /<button|btn|\.button/i },
+                { label: '输入框', re: /<input|<textarea/i },
+                { label: '卡片',   re: /card|\.card|border-radius.*box-shadow|rounded.*shadow/i },
+                { label: '弹窗',   re: /modal|dialog|overlay/i },
+                { label: 'Tab 切换', re: /tab|tab-item|tabbar/i },
+                { label: '图表',   re: /chart|canvas|echarts|d3\.|apexchart/i },
+                { label: '导航栏', re: /navbar|nav-bar|navigation|header.*nav|<nav/i },
+                { label: '列表',   re: /<ul|<ol|list-item|\.list/i },
+                { label: '底部导航', re: /bottom.?nav|tabbar|tab.?bar/i },
+                { label: '下拉菜单', re: /dropdown|select.*option|<select/i },
+                { label: '开关',   re: /toggle|switch.*thumb|\.toggle/i },
+                { label: '进度条', re: /progress|slider/i },
+            ];
+            const foundComponents = componentChecks.filter(c => c.re.test(codeContent)).map(c => c.label);
+
+            // 5. 布局
+            const layoutTags = [];
+            if (/display\s*:\s*flex|flexbox/i.test(codeContent)) layoutTags.push('Flex');
+            if (/display\s*:\s*grid/i.test(codeContent)) layoutTags.push('Grid');
+            if (/@media|responsive|breakpoint/i.test(codeContent)) layoutTags.push('响应式');
+            if (/position\s*:\s*absolute|position\s*:\s*fixed/i.test(codeContent)) layoutTags.push('绝对定位');
+
+            // 6. 交互/动画
+            const interactionTags = [];
+            if (/transition|animation|@keyframes/i.test(codeContent)) interactionTags.push('动画过渡');
+            if (/addEventListener|onclick|\.on\(/i.test(codeContent)) interactionTags.push('交互事件');
+            if (/transform\s*:/i.test(codeContent)) interactionTags.push('Transform');
+            if (/scroll|IntersectionObserver/i.test(codeContent)) interactionTags.push('滚动效果');
+            if (/localStorage|sessionStorage/i.test(codeContent)) interactionTags.push('本地存储');
+            if (/fetch\(|axios|XMLHttpRequest/i.test(codeContent)) interactionTags.push('网络请求');
+
+            const tagStyle = 'display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;';
+            const tagGreen = tagStyle + 'background:rgba(34,197,94,0.12);color:#4ade80;';
+            const tagBlue  = tagStyle + 'background:rgba(99,179,237,0.12);color:#63b3ed;';
+            const tagAmber = tagStyle + 'background:rgba(251,191,36,0.1);color:#fbbf24;';
+
+            return `
+                <div style="display:flex;flex-direction:column;gap:12px;">
+
+                    <!-- 模型行 已由外层注入，这里只放分析内容 -->
+
+                    <!-- 设计思路 -->
+                    <div style="padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">设计思路</div>
+                        ${rationaleText
+                            ? `<p style="color:#d6d3d1;font-size:13px;line-height:1.75;margin:0;">${rationaleText.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>`
+                            : `<span style="color:#44403c;font-size:12px;">暂未输出设计思路</span>`
+                        }
+                    </div>
+
+                    ${colorSet.size > 0 ? `
+                    <!-- 配色 -->
+                    <div style="padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;">配色</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+                            ${[...colorSet].map(c => `
+                                <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.04);border-radius:6px;padding:4px 8px;">
+                                    <div style="width:16px;height:16px;border-radius:4px;background:${c};border:1px solid rgba(255,255,255,0.15);flex-shrink:0;"></div>
+                                    <span style="color:#a8a29e;font-size:11px;font-family:monospace;">${c}</span>
+                                </div>`).join('')}
+                        </div>
+                    </div>` : ''}
+
+                    ${fontSet.size > 0 ? `
+                    <!-- 字体 -->
+                    <div style="padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">字体</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                            ${[...fontSet].map(f => `<span style="${tagBlue}">${f}</span>`).join('')}
+                        </div>
+                    </div>` : ''}
+
+                    ${foundComponents.length > 0 ? `
+                    <!-- 组件 -->
+                    <div style="padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">UI 组件</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                            ${foundComponents.map(c => `<span style="${tagGreen}">${c}</span>`).join('')}
+                        </div>
+                    </div>` : ''}
+
+                    ${layoutTags.length > 0 || interactionTags.length > 0 ? `
+                    <!-- 技术特征 -->
+                    <div style="padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);">
+                        <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">技术特征</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                            ${layoutTags.map(t => `<span style="${tagAmber}">${t}</span>`).join('')}
+                            ${interactionTags.map(t => `<span style="${tagAmber}">${t}</span>`).join('')}
+                        </div>
+                    </div>` : ''}
+
+                </div>`;
+        }
+
+        function showImageModal(imageUrl, modelName = '', cost = null, codeContent = null) {
             document.getElementById('modalImage').src = imageUrl;
             document.getElementById('imageModal').classList.remove('hidden');
             document.getElementById('imageModal').classList.add('flex');
+
+            // 填入右侧信息面板
+            const infoPanel = document.getElementById('modalInfoPanel');
+            if (infoPanel) {
+                const analysisHtml = codeContent
+                    ? buildCodeAnalysisHtml(codeContent)
+                    : `<div style="padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);margin-top:0;">
+                           <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">设计思路</div>
+                           <span style="color:#44403c;font-size:12px;">纯图片生成模型暂无代码分析</span>
+                       </div>`;
+                infoPanel.innerHTML = `
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">模型</span>
+                            <span style="color:#e7e5e4;font-size:13px;font-weight:600;">${modelName || '—'}</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">输出类型</span>
+                            <span style="color:#e7e5e4;font-size:13px;font-weight:600;">${
+                                !codeContent ? '图片生成'
+                                : /^<!--\s*image-description:/i.test(codeContent) ? '描述→图片'
+                                : '代码截图'
+                            }</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;">${analysisHtml}</div>
+                `;
+            }
             // 绑定底部按钮
             document.getElementById('modalCopyBtn').onclick = async () => {
                 try {
@@ -4156,7 +4702,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                     iframe.width = targetWidth;
                     iframe.height = targetHeight;
 
-                    iframe.srcdoc = codeContent;
+                    iframe.srcdoc = injectChartShim(codeContent);
 
                     document.body.appendChild(iframe);
 
@@ -4995,7 +5541,6 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                             <div class="p-4">
                                 <div class="flex justify-between items-center mb-2">
                                     <span class="text-gray-800 font-semibold">${result.modelName}</span>
-                                    <span class="text-gray-600 text-sm">$${result.cost.toFixed(2)}</span>
                                 </div>
                             </div>
                         `;
@@ -5142,126 +5687,120 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
         // 显示代码预览大图（全屏预览）
         function showCodePreview(codeContent, modelName, platform = 'mobile') {
-            // 创建全屏预览模态框
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', handleEsc); }
+            };
+
+            // 全屏蒙层
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-50';
-            // 点击蒙层关闭
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.remove();
-                    document.removeEventListener('keydown', handleEsc);
-                }
-            });
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+            modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); document.removeEventListener('keydown', handleEsc); } });
 
-            const modalContent = document.createElement('div');
+            // 内容区：左右布局
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'display:flex;flex-direction:row;gap:16px;height:95vh;align-items:stretch;width:92vw;max-width:1400px;';
 
-            // 根据平台调整预览尺寸，支持拖拽调整大小
-            if (platform === 'mobile') {
-                // 移动端：使用 iPhone 16 屏幕比例，增加高度，支持调整
-                modalContent.className = 'relative flex flex-col';
-                modalContent.style.width = '393px'; // iPhone 16 宽度
-                modalContent.style.height = '900px'; // 增加高度，从852px增加到900px
-                modalContent.style.minWidth = '300px'; // 最小宽度，支持调整
-                modalContent.style.minHeight = '600px'; // 最小高度，支持调整
-                modalContent.style.maxWidth = '90vw'; // 在小屏幕上自适应
-                modalContent.style.maxHeight = '95vh'; // 增加最大高度，从90vh到95vh
-                modalContent.style.resize = 'both'; // 允许双向调整大小
-                modalContent.style.overflow = 'auto'; // 允许滚动
-            } else {
-                // PC端：使用桌面屏幕比例，增加高度，支持调整
-                modalContent.className = 'relative flex flex-col';
-                modalContent.style.width = '90vw';
-                modalContent.style.maxWidth = '1400px'; // 增加最大宽度
-                modalContent.style.height = '85vh'; // 增加高度，从80vh到85vh
-                modalContent.style.minWidth = '600px'; // 最小宽度
-                modalContent.style.minHeight = '500px'; // 最小高度
-                modalContent.style.maxHeight = '90vh'; // 增加最大高度
-                modalContent.style.resize = 'both'; // 允许双向调整大小
-                modalContent.style.overflow = 'auto'; // 允许滚动
-            }
+            // ── 左：iframe 区 ──
+            const iframeCol = document.createElement('div');
+            iframeCol.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;border-radius:16px;background:#0c0a09;';
 
-            const header = document.createElement('div');
-            header.className = 'flex items-center justify-between mb-4 bg-stone-900/80 p-4 rounded-t-xl border border-stone-700/50 border-b-0';
-            header.innerHTML = `
-                <h2 class="text-lg font-bold text-stone-100">${modelName}</h2>
-                <button class="close-preview-btn w-10 h-10 rounded-xl bg-stone-800 hover:bg-stone-700 flex items-center justify-center text-stone-400 hover:text-stone-200 transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            `;
-
-            const iframeContainer = document.createElement('div');
-            iframeContainer.className = 'flex-1 bg-white rounded-xl overflow-auto shadow-2xl';
-            iframeContainer.style.minHeight = '0';
+            const iframeWrap = document.createElement('div');
+            iframeWrap.style.cssText = 'flex:1;overflow:auto;height:100%;border-radius:16px;display:flex;justify-content:center;align-items:flex-start;scrollbar-gutter:stable;';
+            iframeWrap.classList.add('scrollbar-dark');
 
             const iframe = document.createElement('iframe');
-            iframe.className = 'w-full h-full border-0';
-            iframe.srcdoc = codeContent;
-            iframeContainer.appendChild(iframe);
+            if (platform === 'mobile') {
+                iframe.style.cssText = 'border:none;display:block;width:390px;min-width:390px;height:100%;min-height:667px;';
+            } else {
+                iframe.style.cssText = 'border:none;display:block;width:100%;height:100%;min-height:500px;';
+            }
+            iframe.srcdoc = injectChartShim(codeContent);
+            iframeWrap.appendChild(iframe);
+            iframeCol.appendChild(iframeWrap);
 
-            const footer = document.createElement('div');
-            footer.className = 'mt-4 flex gap-3 bg-stone-900/80 p-4 rounded-b-xl border border-stone-700/50 border-t-0';
-            footer.innerHTML = `
-                <button class="copy-image-btn flex-1 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                    复制图片
-                </button>
-                <button class="download-image-btn flex-1 bg-stone-700 hover:bg-stone-600 text-stone-200 font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    下载图片
-                </button>
+            // ── 右：说明区 ──
+            const side = document.createElement('div');
+            side.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;min-height:0;';
+
+            // 顶部栏：模型名 + 关闭
+            const topBar = document.createElement('div');
+            topBar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-shrink:0;';
+
+            const modelLabel = document.createElement('div');
+            modelLabel.style.cssText = 'color:#fafaf9;font-weight:700;font-size:15px;';
+            modelLabel.textContent = modelName;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.style.cssText = 'width:36px;height:36px;border-radius:10px;background:#292524;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#a8a29e;transition:background 0.15s;flex-shrink:0;';
+            closeBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
+            closeBtn.onmouseenter = () => closeBtn.style.background = '#44403c';
+            closeBtn.onmouseleave = () => closeBtn.style.background = '#292524';
+            closeBtn.onclick = () => { modal.remove(); document.removeEventListener('keydown', handleEsc); };
+
+            topBar.appendChild(modelLabel);
+            topBar.appendChild(closeBtn);
+
+            // 设计说明区（可滚动）
+            const descPanel = document.createElement('div');
+            descPanel.style.cssText = 'flex:1;min-height:0;background:rgba(28,25,23,0.8);border-radius:14px;border:1px solid rgba(255,255,255,0.07);overflow-y:auto;padding:20px;scrollbar-gutter:stable;';
+            descPanel.classList.add('scrollbar-dark');
+
+            descPanel.innerHTML = `
+                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
+                    <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">模型</span>
+                        <span style="color:#e7e5e4;font-size:13px;font-weight:600;">${modelName || '—'}</span>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">输出类型</span>
+                        <span style="color:#e7e5e4;font-size:13px;font-weight:600;">代码预览</span>
+                    </div>
+                </div>
+                ${buildCodeAnalysisHtml(codeContent)}
             `;
 
+            // 底部按钮
+            const btns = document.createElement('div');
+            btns.style.cssText = 'display:flex;flex-direction:row;gap:8px;flex-shrink:0;';
 
-            // 关闭按钮（仅 header）
-            header.querySelector('.close-preview-btn').onclick = () => {
-                modal.remove();
-                document.removeEventListener('keydown', handleEsc);
+            const copyBtn = document.createElement('button');
+            copyBtn.style.cssText = 'flex:1;background:#d97706;border:none;color:#fff;font-weight:600;font-size:13px;padding:13px 0;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;';
+            copyBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>复制图片`;
+            copyBtn.onmouseenter = () => copyBtn.style.background = '#f59e0b';
+            copyBtn.onmouseleave = () => copyBtn.style.background = '#d97706';
+
+            const dlBtn = document.createElement('button');
+            dlBtn.style.cssText = 'flex:1;background:#292524;border:1px solid rgba(255,255,255,0.08);color:#e7e5e4;font-weight:600;font-size:13px;padding:13px 0;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;';
+            dlBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>下载图片`;
+            dlBtn.onmouseenter = () => dlBtn.style.background = '#44403c';
+            dlBtn.onmouseleave = () => dlBtn.style.background = '#292524';
+
+            copyBtn.onclick = async () => {
+                try { await copyLongImageToClipboard(codeContent, platform, modelName); }
+                catch (err) { console.error('复制图片失败:', err); }
             };
-
-            // 复制图片按钮
-            footer.querySelector('.copy-image-btn').onclick = async () => {
-                try {
-                    await copyLongImageToClipboard(codeContent, platform, modelName);
-                } catch (err) {
-                    console.error('复制图片失败:', err);
-                }
-            };
-
-            // 下载图片按钮
-            footer.querySelector('.download-image-btn').onclick = async () => {
+            dlBtn.onclick = async () => {
                 try {
                     showToast('🖼️ 正在生成图片...', 2000);
                     const dataUrl = await copyLongImageToClipboard(codeContent, platform, modelName);
-                    // 下载图片
-                    const link = document.createElement('a');
-                    link.href = dataUrl;
-                    link.download = `${modelName || 'ui-design'}-${Date.now()}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    const a = document.createElement('a');
+                    a.href = dataUrl;
+                    a.download = `${modelName || 'ui-design'}-${Date.now()}.png`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
                     showToast('✅ 图片已下载', 2000);
-                } catch (err) {
-                    console.error('下载图片失败:', err);
-                    showToast('❌ 下载图片失败', 2000);
-                }
+                } catch (err) { showToast('❌ 下载图片失败', 2000); }
             };
 
+            btns.appendChild(copyBtn);
+            btns.appendChild(dlBtn);
+            side.appendChild(topBar);
+            side.appendChild(descPanel);
+            side.appendChild(btns);
 
-
-
-            modalContent.appendChild(header);
-            modalContent.appendChild(iframeContainer);
-            modalContent.appendChild(footer);
-            modal.appendChild(modalContent);
+            wrap.appendChild(iframeCol);
+            wrap.appendChild(side);
+            modal.appendChild(wrap);
             document.body.appendChild(modal);
-
-            // 按 ESC 键关闭
-            const handleEsc = (e) => {
-                if (e.key === 'Escape') {
-                    modal.remove();
-                    document.removeEventListener('keydown', handleEsc);
-                }
-            };
             document.addEventListener('keydown', handleEsc);
         }
     </script>
