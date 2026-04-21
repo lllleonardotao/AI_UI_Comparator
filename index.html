@@ -2676,8 +2676,8 @@
 5. 补充关键的交互状态（选中态、空状态等）
 6. 输出长度 150-300 字，纯文字，不要 markdown 格式，不要解释说明，只输出扩写后的需求描述`;
 
-                // 使用当前 provider 决定优化提示词的模型
-                const optimizeModel = getCurrentProvider() === 'fitai' ? 'gemini-3-flash' : 'deepseek/deepseek-chat-v3.1';
+                // 使用 FitAI 默认模型优化提示词
+                const optimizeModel = 'gemini-3.1-flash-lite';
                 const apiConfig = getApiConfig(optimizeModel);
                 const response = await fetch(apiConfig.url, {
                     method: 'POST',
@@ -3502,7 +3502,16 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
                 // 递归搜索所有属性
                 for (let key in obj) {
-                    if (obj.hasOwnProperty(key) && !['reasoning', 'text', 'role'].includes(key)) {
+                    if (obj.hasOwnProperty(key) && !['reasoning', 'role'].includes(key)) {
+                        // 对于 text 字段，只在它看起来像图片数据时才递归（避免误判大段文字）
+                        if (key === 'text') {
+                            const v = obj[key];
+                            if (typeof v === 'string' && (v.startsWith('data:image/') || v.startsWith('http') || v.startsWith('iVBORw0KGgo') || v.startsWith('/9j/'))) {
+                                const result = deepSearch(v, visited);
+                                if (result) return result;
+                            }
+                            continue;
+                        }
                         const result = deepSearch(obj[key], visited);
                         if (result) return result;
                     }
@@ -3517,6 +3526,29 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 for (let i = 0; i < message.content.length; i++) {
                     const item = message.content[i];
                     debugLog(`  [${i}] type:`, item.type, 'keys:', Object.keys(item));
+
+                    // Gemini/FitAI 可能把图片base64放在 text 类型的 content 里
+                    if (item.type === 'text' && typeof item.text === 'string') {
+                        const t = item.text;
+                        if (t.startsWith('data:image/')) {
+                            debugLog('✅ Found base64 image in text content item');
+                            return t;
+                        }
+                        if (t.startsWith('iVBORw0KGgo')) {
+                            debugLog('✅ Found PNG base64 in text content item');
+                            return `data:image/png;base64,${t}`;
+                        }
+                        if (t.startsWith('/9j/')) {
+                            debugLog('✅ Found JPEG base64 in text content item');
+                            return `data:image/jpeg;base64,${t}`;
+                        }
+                        // 尝试从文本中提取图片URL
+                        const urlFound = extractImageUrl(t);
+                        if (urlFound) {
+                            debugLog('✅ Extracted image URL from text content item');
+                            return urlFound;
+                        }
+                    }
 
                     // Gemini 格式: {type: "image_url", image_url: {url: "data:image/..."}}
                     if (item.type === 'image_url') {
@@ -4388,19 +4420,31 @@ ${code}
                     btn.innerHTML = '<div class="spinner w-3.5 h-3.5"></div>';
                     const platformRadio = document.querySelector('input[name="platform"]:checked');
                     const currentPlatform = platformRadio ? platformRadio.value : 'mobile';
-                    showToast('🖼️ 正在生成图片...', 2000);
+                    showToast('🖼️ 正在生成图片...', 3000);
                     try {
-                        const imageData = await codeToImage(codeContent, currentPlatform);
-                        if (imageData) {
-                            const res = await fetch(imageData);
-                            const blob = await res.blob();
-                            await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                        // 优先用服务端 Puppeteer 截图，失败再用 html2canvas
+                        let imageData = null;
+                        try {
+                            imageData = await copyLongImageToClipboard(codeContent, currentPlatform, config.name);
                             showToast('✅ 图片已复制到剪贴板', 2000);
-                        } else {
-                            showCodePreview(codeContent, config.name, currentPlatform);
-                            setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
+                        } catch (puppeteerErr) {
+                            console.warn('Puppeteer 复制失败，fallback 到 html2canvas:', puppeteerErr);
+                            imageData = await codeToImage(codeContent, currentPlatform);
+                            if (imageData) {
+                                const res = await fetch(imageData);
+                                const blob = await res.blob();
+                                await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                                showToast('✅ 图片已复制到剪贴板', 2000);
+                            } else {
+                                showCodePreview(codeContent, config.name, currentPlatform);
+                                setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
+                            }
                         }
-                    } catch { showToast('❌ 复制失败，请用下载', 2000); }
+                    } catch (err) {
+                        console.error('复制图片失败:', err);
+                        showCodePreview(codeContent, config.name, currentPlatform);
+                        setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
+                    }
                     finally { btn.disabled = false; btn.innerHTML = origInner; }
                 };
 
@@ -4412,17 +4456,26 @@ ${code}
                     btn.innerHTML = '<div class="spinner w-3.5 h-3.5"></div>';
                     const platformRadio = document.querySelector('input[name="platform"]:checked');
                     const currentPlatform = platformRadio ? platformRadio.value : 'mobile';
-                    showToast('🖼️ 正在生成图片...', 2000);
+                    showToast('🖼️ 正在生成图片...', 3000);
                     try {
-                        const imageData = await codeToImage(codeContent, currentPlatform);
-                        if (imageData) {
-                            await downloadImage(imageData, config.name);
+                        // 优先用服务端 Puppeteer 截图，失败再用 html2canvas
+                        try {
+                            const dataUrl = await copyLongImageToClipboard(codeContent, currentPlatform, config.name);
+                            await downloadImage(dataUrl, config.name);
                             showToast('✅ 图片已生成并下载', 2000);
-                        } else {
-                            showCodePreview(codeContent, config.name, currentPlatform);
-                            setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
+                        } catch (puppeteerErr) {
+                            console.warn('Puppeteer 下载失败，fallback 到 html2canvas:', puppeteerErr);
+                            const imageData = await codeToImage(codeContent, currentPlatform);
+                            if (imageData) {
+                                await downloadImage(imageData, config.name);
+                                showToast('✅ 图片已生成并下载', 2000);
+                            } else {
+                                showCodePreview(codeContent, config.name, currentPlatform);
+                                setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
+                            }
                         }
-                    } catch {
+                    } catch (err) {
+                        console.error('下载图片失败:', err);
                         showCodePreview(codeContent, config.name, currentPlatform);
                         setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
                     }
@@ -6496,19 +6549,58 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             dlBtn.onmouseleave = () => dlBtn.style.background = isDark ? '#292524' : '#f3f1eb';
 
             copyBtn.onclick = async () => {
-                try { await copyLongImageToClipboard(codeContent, platform, modelName); }
-                catch (err) { console.error('复制图片失败:', err); }
+                copyBtn.disabled = true;
+                const origInner = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border:2px solid rgba(0,0,0,0.2);border-top-color:#1c1917;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;"></div>';
+                showToast('🖼️ 正在生成图片...', 3000);
+                try {
+                    await copyLongImageToClipboard(codeContent, platform, modelName);
+                    showToast('✅ 图片已复制到剪贴板', 2000);
+                } catch (err) {
+                    console.error('Puppeteer 复制失败，使用 html2canvas 备用:', err);
+                    try {
+                        const imageData = await codeToImage(codeContent, platform);
+                        if (imageData) {
+                            const res = await fetch(imageData);
+                            const blob = await res.blob();
+                            await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                            showToast('✅ 图片已复制到剪贴板', 2000);
+                        } else {
+                            showToast('❌ 复制失败，请截图保存', 2000);
+                        }
+                    } catch (err2) { showToast('❌ 复制失败，请截图保存', 2000); }
+                } finally {
+                    copyBtn.disabled = false;
+                    copyBtn.innerHTML = origInner;
+                }
             };
             dlBtn.onclick = async () => {
+                dlBtn.disabled = true;
+                const origInner = dlBtn.innerHTML;
+                dlBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:#e7e5e4;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;"></div>';
+                showToast('🖼️ 正在生成图片...', 3000);
                 try {
-                    showToast('正在生成图片...', 2000);
                     const dataUrl = await copyLongImageToClipboard(codeContent, platform, modelName);
                     const a = document.createElement('a');
                     a.href = dataUrl;
                     a.download = `${modelName || 'ui-design'}-${Date.now()}.png`;
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                    showToast('图片已下载', 2000);
-                } catch (err) { showToast('下载图片失败', 2000); }
+                    showToast('✅ 图片已下载', 2000);
+                } catch (err) {
+                    console.error('Puppeteer 下载失败，使用 html2canvas 备用:', err);
+                    try {
+                        const imageData = await codeToImage(codeContent, platform);
+                        if (imageData) {
+                            await downloadImage(imageData, modelName || 'ui-design');
+                            showToast('✅ 图片已下载', 2000);
+                        } else {
+                            showToast('❌ 下载失败，请截图保存', 2000);
+                        }
+                    } catch (err2) { showToast('❌ 下载失败，请截图保存', 2000); }
+                } finally {
+                    dlBtn.disabled = false;
+                    dlBtn.innerHTML = origInner;
+                }
             };
 
             btns.appendChild(copyBtn);
