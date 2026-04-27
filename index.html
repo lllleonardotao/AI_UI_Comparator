@@ -1342,6 +1342,15 @@
                                     </svg>
                                 </span>
                             </button>
+                            <!-- 清空按钮 -->
+                            <button type="button" onclick="clearPromptInput()"
+                                class="w-8 h-8 flex items-center justify-center bg-stone-700/60 hover:bg-stone-700 text-stone-400 hover:text-red-400 rounded-lg transition border border-stone-600/50"
+                                title="清空输入">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
                             <span class="ml-auto text-xs font-mono"><span id="charCount" class="text-stone-500">0</span><span class="text-stone-600">/1000</span></span>
                         </div>
                     </div>
@@ -1409,7 +1418,7 @@
                     </div>
 
                     <!-- 生成按钮 -->
-                    <div id="generateBtnSection" class="mt-4 mb-2">
+                    <div id="generateBtnSection" class="mt-1 mb-2">
                         <button onclick="startGeneration()" id="generateBtn"
                             class="w-full btn-primary py-4 rounded-xl text-base flex items-center justify-center gap-2">
                             <span>开始生成</span>
@@ -2531,6 +2540,20 @@
             }
         }
 
+        // 清空输入框和参考图片
+        function clearPromptInput() {
+            const input = document.getElementById('promptInput');
+            if (!input.value.trim() && referenceImages.length === 0) {
+                showToast('已经是空的了', 1500);
+                return;
+            }
+            input.value = '';
+            referenceImages = [];
+            renderReferenceImages();
+            updateCharCount();
+            showToast('已清空', 1500);
+        }
+
         // 成本估算（保留函数，不再展示价格）
         function updateCostEstimate() {
             // 所有模型均免费，无需计算和展示价格
@@ -2674,7 +2697,8 @@
 2. 只描述一个页面（单屏），不要出现多页面或流程跳转
 3. 可以补充产品类型隐含的大方向（如"理财App"隐含专业、信任感），但不要指定具体的组件、布局、动效、材质
 4. 用户没提到的设计细节，用一句话引导设计模型："请从用户场景与功能需求出发，自由发挥布局、组件与交互细节"
-5. 输出 80-150 字，纯文字，不要 markdown，不要解释，只输出整理后的需求`;
+5. 不要添加"输出设计思路"、"说明设计原因"等元指令，只描述界面本身
+6. 输出 80-150 字，纯文字，不要 markdown，不要解释，只输出整理后的需求`;
 
                 // 使用 FitAI 默认模型优化提示词
                 const optimizeModel = 'gemini-3.1-flash-lite';
@@ -3037,7 +3061,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
         async function generateWithModel(modelKey, prompt, platform = 'mobile') {
             const config = MODEL_CONFIGS[modelKey];
             // 切换卡片状态：排队中 → 生成中
-            setCardGenerating(modelKey);
+            setCardGenerating(modelKey, '连接中...');
 
             try {
                 let imageUrl = null;
@@ -3046,7 +3070,9 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
                 if (config.type === 'image') {
                     // 直接生成图片的模型（Gemini, Flux, GPT-5）
+                    updateCardStatus(modelKey, 'AI 生成图片中...');
                     const imageResult = await generateImage(config.model, prompt, platform);
+                    updateCardStatus(modelKey, '渲染中...');
                     if (typeof imageResult === 'object' && imageResult.imageUrl) {
                         imageUrl = imageResult.imageUrl;
                         actualCost = imageResult.actualCost !== null ? imageResult.actualCost : actualCost;
@@ -3055,7 +3081,9 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                     }
                 } else if (config.type === 'code') {
                     // 生成代码的模型
-                    const codeResult = await generateCode(config, prompt, platform);
+                    updateCardStatus(modelKey, 'AI 思考中...');
+                    const codeResult = await generateCode(config, prompt, platform, (status) => updateCardStatus(modelKey, status));
+                    updateCardStatus(modelKey, '渲染中...');
                     if (typeof codeResult === 'object' && codeResult.code) {
                         codeContent = codeResult.code;
                         actualCost = codeResult.actualCost !== null ? codeResult.actualCost : actualCost;
@@ -3064,6 +3092,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                     }
                 } else if (config.type === 'text-to-image-desc') {
                     // 两阶段生成：先用文字模型生成描述，再用图片模型生成图
+                    updateCardStatus(modelKey, '生成设计描述...');
                     const descResult = await generateDescription(config.model, prompt);
                     let description;
                     if (typeof descResult === 'object' && descResult.description) {
@@ -3082,7 +3111,9 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                     const imageModel = config.imageModel || 'gemini-3-pro-image';
                     debugLog('📝 描述生成完成，使用图片模型:', imageModel);
 
+                    updateCardStatus(modelKey, '描述完成，生成图片...');
                     const imageResult = await generateImage(imageModel, description, platform);
+                    updateCardStatus(modelKey, '渲染中...');
                     if (typeof imageResult === 'object' && imageResult.imageUrl) {
                         imageUrl = imageResult.imageUrl;
                         if (imageResult.actualCost !== null) {
@@ -3771,7 +3802,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
         /**
          * 生成代码
          */
-        async function generateCode(modelInput, prompt, platform = 'mobile') {
+        async function generateCode(modelInput, prompt, platform = 'mobile', onStatusUpdate = null) {
             // 允许传入模型配置对象或纯字符串
             const modelConfig = typeof modelInput === 'object' ? modelInput : { model: modelInput };
             const model = modelConfig.model || '';
@@ -3803,7 +3834,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 8. 使用内联样式或 <style> 标签，确保代码可以独立运行
 9. 优先保证代码质量和功能完整性，避免不必要的冗余代码
 9.5. 【交互样式要求】所有按钮、链接等交互元素的 hover/active/focus 状态，必须保证文字始终可见：hover 时若改变背景色，必须同时显式设置对比度足够的文字颜色（如深色背景配白色文字、浅色背景配深色文字），严禁出现文字与背景色相近导致不可见的情况
-10. 界面中所有需要图片的地方，使用 https://loremflickr.com/{width}/{height}/{keyword} 作为 src，keyword 根据 UI 场景选择最相关的英文单词（例如：finance、food、travel、shopping、music、sport、nature、city、fashion、health 等），不要使用纯色块或 CSS 渐变代替图片
+10. 界面中所有需要图片的地方，使用 https://picsum.photos/seed/{keyword}/{width}/{height} 作为 src，keyword 根据 UI 场景选择最相关的英文单词（例如：finance、food、travel、shopping、music、sport、nature、city、fashion、health 等），不要使用纯色块或 CSS 渐变代替图片。同一位置的图片必须始终使用相同的 keyword，确保图片稳定不变化
 11. 【重要】图表要求：任何需要展示数据趋势、统计、分析的区域（如折线图、柱状图、饼图、雷达图、仪表盘等），必须：
     - 在 head 中引入 Chart.js（不加 defer/async）：<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
     - canvas 不要写 width/height 属性，让 Chart.js responsive:true 自动适配父容器宽度
@@ -4008,6 +4039,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 };
 
                 const response = await makeRequestWithRetry(requestBody);
+                if (onStatusUpdate) onStatusUpdate('生成代码中...');
 
                 const data = await response.json();
 
@@ -4171,8 +4203,24 @@ ${code}
         // 存储计时器引用
         const cardTimers = {};
 
+        // 全局截图缓存（卡片和弹窗共享）
+        const screenshotCache = new Map();
+
+        // 获取或生成截图（全局缓存）
+        async function getOrCreateGlobalScreenshot(codeContent, platform) {
+            // 用内容的前200字符 + 长度作为简单的缓存 key
+            const cacheKey = codeContent.substring(0, 200) + '_' + codeContent.length + '_' + platform;
+            if (screenshotCache.has(cacheKey)) {
+                return screenshotCache.get(cacheKey);
+            }
+            showToast('🖼️ 正在生成图片...', 5000);
+            const dataUrl = await takeServerScreenshot(codeContent, platform);
+            screenshotCache.set(cacheKey, dataUrl);
+            return dataUrl;
+        }
+
         // 将卡片状态从"排队中"切换为"生成中"（带计时器）
-        function setCardGenerating(modelKey) {
+        function setCardGenerating(modelKey, initialStatus = '连接中...') {
             const statusDiv = document.getElementById(`result-status-${modelKey}`);
             if (!statusDiv) return;
             const config = MODEL_CONFIGS[modelKey];
@@ -4183,7 +4231,7 @@ ${code}
                     <div class="spinner mx-auto mb-4"></div>
                     <div class="text-stone-300 text-sm font-medium mb-1">${config ? config.name : modelKey}</div>
                     <div class="text-amber-400/80 text-xs font-medium tracking-wide">
-                        生成中... <span id="timer-${modelKey}" class="font-mono">0s</span>
+                        <span id="status-${modelKey}">${initialStatus}</span> <span id="timer-${modelKey}" class="font-mono">0s</span>
                     </div>
                 </div>
             `;
@@ -4204,6 +4252,14 @@ ${code}
                     delete cardTimers[modelKey];
                 }
             }, 1000);
+        }
+
+        // 更新卡片状态文字
+        function updateCardStatus(modelKey, statusText) {
+            const statusEl = document.getElementById(`status-${modelKey}`);
+            if (statusEl) {
+                statusEl.textContent = statusText;
+            }
         }
 
         // 停止卡片计时器
@@ -4285,8 +4341,8 @@ ${code}
 
                 card.appendChild(errorDiv);
                 card.appendChild(infoDiv);
-            } else if (codeContent) {
-                // 代码内容 - 统一尺寸，只显示首屏
+            } else if (codeContent && !/^<!--\s*image-description:/i.test(codeContent)) {
+                // 代码内容 - 统一尺寸，只显示首屏（排除 image-description 注释）
                 const codeContainer = document.createElement('div');
                 codeContainer.className = 'flex flex-col flex-1 overflow-hidden';
                 codeContainer.style.minHeight = '0';
@@ -4412,74 +4468,59 @@ ${code}
                     </div>
                 `;
 
-                infoDiv.querySelector('.code-copy-btn').onclick = async (e) => {
+                // 使用全局缓存
+                const copyBtnEl = infoDiv.querySelector('.code-copy-btn');
+                const dlBtnEl = infoDiv.querySelector('.code-dl-btn');
+
+                copyBtnEl.onclick = async (e) => {
                     e.stopPropagation();
-                    const btn = e.currentTarget;
-                    const origInner = btn.innerHTML;
-                    btn.disabled = true;
-                    btn.innerHTML = '<div class="spinner w-3.5 h-3.5"></div>';
+                    const origInner = copyBtnEl.innerHTML;
+                    copyBtnEl.disabled = true;
+                    dlBtnEl.disabled = true;
+                    copyBtnEl.innerHTML = '<div class="spinner w-3.5 h-3.5"></div>';
                     const platformRadio = document.querySelector('input[name="platform"]:checked');
                     const currentPlatform = platformRadio ? platformRadio.value : 'mobile';
-                    showToast('🖼️ 正在生成图片...', 3000);
                     try {
-                        // 优先用服务端 Puppeteer 截图，失败再用 html2canvas
-                        let imageData = null;
-                        try {
-                            imageData = await copyLongImageToClipboard(codeContent, currentPlatform, config.name);
-                            showToast('✅ 图片已复制到剪贴板', 2000);
-                        } catch (puppeteerErr) {
-                            console.warn('Puppeteer 复制失败，fallback 到 html2canvas:', puppeteerErr);
-                            imageData = await codeToImage(codeContent, currentPlatform);
-                            if (imageData) {
-                                const res = await fetch(imageData);
-                                const blob = await res.blob();
-                                await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-                                showToast('✅ 图片已复制到剪贴板', 2000);
-                            } else {
-                                showCodePreview(codeContent, config.name, currentPlatform);
-                                setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
-                            }
-                        }
+                        const dataUrl = await getOrCreateGlobalScreenshot(codeContent, currentPlatform);
+                        const res = await fetch(dataUrl);
+                        const blob = await res.blob();
+                        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                        showToast('✅ 图片已复制到剪贴板', 2000);
                     } catch (err) {
                         console.error('复制图片失败:', err);
-                        showCodePreview(codeContent, config.name, currentPlatform);
-                        setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
+                        showToast('❌ 复制失败，请重试', 2000);
+                    } finally {
+                        copyBtnEl.disabled = false;
+                        dlBtnEl.disabled = false;
+                        copyBtnEl.innerHTML = origInner;
                     }
-                    finally { btn.disabled = false; btn.innerHTML = origInner; }
                 };
 
-                infoDiv.querySelector('.code-dl-btn').onclick = async (e) => {
+                dlBtnEl.onclick = async (e) => {
                     e.stopPropagation();
-                    const btn = e.currentTarget;
-                    const origInner = btn.innerHTML;
-                    btn.disabled = true;
-                    btn.innerHTML = '<div class="spinner w-3.5 h-3.5"></div>';
+                    const origInner = dlBtnEl.innerHTML;
+                    dlBtnEl.disabled = true;
+                    copyBtnEl.disabled = true;
+                    dlBtnEl.innerHTML = '<div class="spinner w-3.5 h-3.5"></div>';
                     const platformRadio = document.querySelector('input[name="platform"]:checked');
                     const currentPlatform = platformRadio ? platformRadio.value : 'mobile';
-                    showToast('🖼️ 正在生成图片...', 3000);
                     try {
-                        // 优先用服务端 Puppeteer 截图，失败再用 html2canvas
-                        try {
-                            const dataUrl = await copyLongImageToClipboard(codeContent, currentPlatform, config.name);
-                            await downloadImage(dataUrl, config.name);
-                            showToast('✅ 图片已生成并下载', 2000);
-                        } catch (puppeteerErr) {
-                            console.warn('Puppeteer 下载失败，fallback 到 html2canvas:', puppeteerErr);
-                            const imageData = await codeToImage(codeContent, currentPlatform);
-                            if (imageData) {
-                                await downloadImage(imageData, config.name);
-                                showToast('✅ 图片已生成并下载', 2000);
-                            } else {
-                                showCodePreview(codeContent, config.name, currentPlatform);
-                                setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
-                            }
-                        }
+                        const dataUrl = await getOrCreateGlobalScreenshot(codeContent, currentPlatform);
+                        const a = document.createElement('a');
+                        a.href = dataUrl;
+                        a.download = `${config.name}-${Date.now()}.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        showToast('✅ 图片已下载', 2000);
                     } catch (err) {
                         console.error('下载图片失败:', err);
-                        showCodePreview(codeContent, config.name, currentPlatform);
-                        setTimeout(() => showToast('💡 请在全屏预览中截图', 3000), 500);
+                        showToast('❌ 下载失败，请重试', 2000);
+                    } finally {
+                        dlBtnEl.disabled = false;
+                        copyBtnEl.disabled = false;
+                        dlBtnEl.innerHTML = origInner;
                     }
-                    finally { btn.disabled = false; btn.innerHTML = origInner; }
                 };
 
                 codeContainer.appendChild(infoDiv);
@@ -4992,6 +5033,15 @@ Avoid: 3D elements, realistic photos, cartoon style`;
         // 解法：window.load 之后找出所有 canvas，补高度，再调 Chart.getChart().resize()
         function injectChartShim(html) {
             if (!html || typeof html !== 'string') return html;
+
+            // 替换随机图片 URL 为固定 seed URL，避免每次渲染图片变化
+            // loremflickr.com/{w}/{h}/{keyword} → picsum.photos/seed/{keyword}/{w}/{h}
+            html = html.replace(/https?:\/\/loremflickr\.com\/(\d+)\/(\d+)\/([a-zA-Z0-9_-]+)/g,
+                (match, w, h, keyword) => `https://picsum.photos/seed/${keyword}/${w}/${h}`);
+            // 处理没有 keyword 的情况
+            html = html.replace(/https?:\/\/loremflickr\.com\/(\d+)\/(\d+)(?![\/\w])/g,
+                (match, w, h) => `https://picsum.photos/seed/default/${w}/${h}`);
+
             if (!/chart\.js/i.test(html)) return html;
 
             const shim = `<style>canvas { display: block !important; }</style>
@@ -5038,8 +5088,15 @@ Avoid: 3D elements, realistic photos, cartoon style`;
         }
 
         // ── 从 codeContent 提取设计分析，返回右侧面板 HTML ──
-        function buildCodeAnalysisHtml(codeContent) {
+        function buildCodeAnalysisHtml(codeContent, isDark = true) {
             if (!codeContent) return '<div style="color:#44403c;font-size:13px;text-align:center;padding:40px 0;">暂无代码内容</div>';
+
+            // 主题相关颜色
+            const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+            const cardBorder = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+            const labelColor = '#78716c';
+            const textColor = isDark ? '#d6d3d1' : '#44403c';
+            const mutedColor = isDark ? '#57534e' : '#78716c';
 
             // 检测是否为两阶段图片生成的中间描述文字
             const imageDescMatch = codeContent.match(/^<!--\s*image-description:([\s\S]*?)-->\s*$/i);
@@ -5047,12 +5104,12 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 const descText = imageDescMatch[1].trim();
                 return `
                 <div style="display:flex;flex-direction:column;gap:12px;">
-                    <div style="padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);">
-                        <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">设计思路</div>
-                        <p style="color:#d6d3d1;font-size:13px;line-height:1.75;margin:0;">${descText.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>
+                    <div style="padding:14px 16px;background:${cardBg};border-radius:10px;border:1px solid ${cardBorder};">
+                        <div style="color:${labelColor};font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">设计思路</div>
+                        <p style="color:${textColor};font-size:13px;line-height:1.75;margin:0;">${descText.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</p>
                     </div>
-                    <div style="padding:10px 16px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px solid rgba(255,255,255,0.04);">
-                        <span style="color:#57534e;font-size:11px;">此内容由文字模型生成后交由图片模型渲染，无法提取配色 / 组件等代码级信息</span>
+                    <div style="padding:10px 16px;background:${cardBg};border-radius:10px;border:1px solid ${cardBorder};">
+                        <span style="color:${mutedColor};font-size:11px;">此内容由文字模型生成后交由图片模型渲染，无法提取配色 / 组件等代码级信息</span>
                     </div>
                 </div>`;
             }
@@ -5195,6 +5252,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
         }
 
         function showImageModal(imageUrl, modelName = '', cost = null, codeContent = null) {
+            const isDark = document.documentElement.classList.contains('dark');
             document.getElementById('modalImage').src = imageUrl;
             document.getElementById('imageModal').classList.remove('hidden');
             document.getElementById('imageModal').classList.add('flex');
@@ -5202,9 +5260,11 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             // 填入右侧信息面板
             const infoPanel = document.getElementById('modalInfoPanel');
             if (infoPanel) {
+                const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+                const cardBorder = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
                 const analysisHtml = codeContent
-                    ? buildCodeAnalysisHtml(codeContent)
-                    : `<div style="padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);margin-top:0;">
+                    ? buildCodeAnalysisHtml(codeContent, isDark)
+                    : `<div style="padding:14px 16px;background:${cardBg};border-radius:10px;border:1px solid ${cardBorder};margin-top:0;">
                            <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">设计思路</div>
                            <span style="color:#44403c;font-size:12px;">纯图片生成模型暂无代码分析</span>
                        </div>`;
@@ -5625,31 +5685,38 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
         /**
          * 复制长图到剪贴板（使用服务端 Puppeteer）
-         * 通过 /api/screenshot 端点进行像素级完美截图
+         * 通过 /api/screenshot 端点进行像素级完美截图（纯截图，不复制）
+         */
+        async function takeServerScreenshot(codeContent, platform = 'mobile') {
+            const targetWidth = platform === 'mobile' ? 375 : 1920;
+
+            const response = await fetch('/api/screenshot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    html: codeContent,
+                    width: targetWidth,
+                    scale: 2
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || '截图服务失败');
+            }
+
+            const { dataUrl, height } = await response.json();
+            console.log('Screenshot generated:', { height, width: targetWidth });
+            return dataUrl;
+        }
+
+        /**
+         * 复制长图到剪贴板
          */
         async function copyLongImageToClipboard(codeContent, platform = 'mobile', modelName = '') {
             try {
                 showToast('🖼️ 正在生成长图...', 5000);
-                const targetWidth = platform === 'mobile' ? 375 : 1920;
-
-                // 调用服务端 Puppeteer API
-                const response = await fetch('/api/screenshot', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        html: codeContent,
-                        width: targetWidth,
-                        scale: 2
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || '截图服务失败');
-                }
-
-                const { dataUrl, height } = await response.json();
-                console.log('Screenshot generated:', { height, width: targetWidth });
+                const dataUrl = await takeServerScreenshot(codeContent, platform);
 
                 // 转换为 Blob 并复制到剪贴板
                 const blobResponse = await fetch(dataUrl);
@@ -5663,6 +5730,22 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 showToast('❌ 生成长图失败: ' + error.message, 3000);
                 throw error;
             }
+        }
+
+        /**
+         * 下载长图（直接调用服务端截图，不依赖剪贴板）
+         */
+        async function downloadLongImage(codeContent, platform = 'mobile', modelName = '') {
+            showToast('🖼️ 正在生成长图...', 5000);
+            const dataUrl = await takeServerScreenshot(codeContent, platform);
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `${modelName || 'ui-design'}-${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('✅ 图片已下载', 2000);
+            return dataUrl;
         }
 
         /**
@@ -6402,9 +6485,12 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
         // 显示提示消息
         function showToast(message, duration = 2000) {
+            // 移除已有的 toast，避免叠加
+            document.querySelectorAll('.app-toast').forEach(t => t.remove());
+
             // 创建 toast 元素
             const toast = document.createElement('div');
-            toast.className = 'fixed z-[9999] transition-all opacity-0';
+            toast.className = 'app-toast fixed z-[9999] transition-all opacity-0';
             toast.style.cssText = `
                 top: 50%;
                 left: 50%;
@@ -6462,17 +6548,20 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
             modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); document.removeEventListener('keydown', handleEsc); } });
 
+            // 主题判断提前
+            const isDark = document.documentElement.classList.contains('dark');
+
             // 内容区：左右布局
             const wrap = document.createElement('div');
             wrap.style.cssText = 'display:flex;flex-direction:row;gap:16px;height:95vh;align-items:stretch;width:92vw;max-width:1400px;';
 
             // ── 左：iframe 区 ──
             const iframeCol = document.createElement('div');
-            iframeCol.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;border-radius:16px;background:#0c0a09;';
+            iframeCol.style.cssText = `flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;border-radius:16px;background:${isDark ? '#0c0a09' : '#f5f3ee'};border:1px solid ${isDark ? 'transparent' : '#e7e5df'};`;
 
             const iframeWrap = document.createElement('div');
             iframeWrap.style.cssText = 'flex:1;overflow:auto;height:100%;border-radius:16px;display:flex;justify-content:center;align-items:flex-start;scrollbar-gutter:stable;';
-            iframeWrap.classList.add('scrollbar-dark');
+            iframeWrap.classList.add(isDark ? 'scrollbar-dark' : 'scrollbar-light');
 
             const iframe = document.createElement('iframe');
             if (platform === 'mobile') {
@@ -6485,7 +6574,6 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             iframeCol.appendChild(iframeWrap);
 
             // ── 右：说明区（统一卡片结构，与图片预览一致） ──
-            const isDark = document.documentElement.classList.contains('dark');
             const side = document.createElement('div');
             side.id = 'codePreviewRightPanel';
             side.style.cssText = `flex:1;min-width:0;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;border:1px solid ${isDark ? 'rgba(255,255,255,0.07)' : '#e7e5df'};background:${isDark ? '#1c1917' : '#ffffff'};`;
@@ -6496,7 +6584,7 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
             const titleLabel = document.createElement('span');
             titleLabel.style.cssText = `color:${isDark ? '#fafaf9' : '#1c1917'};font-weight:700;font-size:15px;`;
-            titleLabel.textContent = '代码详情';
+            titleLabel.textContent = '图片详情';
 
             const closeBtn = document.createElement('button');
             closeBtn.style.cssText = `width:32px;height:32px;border-radius:8px;background:${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'};border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:${isDark ? '#a8a29e' : '#57534e'};transition:background 0.15s;flex-shrink:0;`;
@@ -6548,57 +6636,48 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             dlBtn.onmouseenter = () => dlBtn.style.background = isDark ? '#44403c' : '#e7e5df';
             dlBtn.onmouseleave = () => dlBtn.style.background = isDark ? '#292524' : '#f3f1eb';
 
+            // 使用全局缓存（卡片和弹窗共享）
             copyBtn.onclick = async () => {
                 copyBtn.disabled = true;
+                dlBtn.disabled = true;
                 const origInner = copyBtn.innerHTML;
                 copyBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border:2px solid rgba(0,0,0,0.2);border-top-color:#1c1917;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;"></div>';
-                showToast('🖼️ 正在生成图片...', 3000);
                 try {
-                    await copyLongImageToClipboard(codeContent, platform, modelName);
+                    const dataUrl = await getOrCreateGlobalScreenshot(codeContent, platform);
+                    const res = await fetch(dataUrl);
+                    const blob = await res.blob();
+                    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
                     showToast('✅ 图片已复制到剪贴板', 2000);
                 } catch (err) {
-                    console.error('Puppeteer 复制失败，使用 html2canvas 备用:', err);
-                    try {
-                        const imageData = await codeToImage(codeContent, platform);
-                        if (imageData) {
-                            const res = await fetch(imageData);
-                            const blob = await res.blob();
-                            await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-                            showToast('✅ 图片已复制到剪贴板', 2000);
-                        } else {
-                            showToast('❌ 复制失败，请截图保存', 2000);
-                        }
-                    } catch (err2) { showToast('❌ 复制失败，请截图保存', 2000); }
+                    console.error('复制失败:', err);
+                    showToast('❌ 复制失败，请重试', 2000);
                 } finally {
                     copyBtn.disabled = false;
+                    dlBtn.disabled = false;
                     copyBtn.innerHTML = origInner;
                 }
             };
+
             dlBtn.onclick = async () => {
                 dlBtn.disabled = true;
+                copyBtn.disabled = true;
                 const origInner = dlBtn.innerHTML;
                 dlBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:#e7e5e4;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;"></div>';
-                showToast('🖼️ 正在生成图片...', 3000);
                 try {
-                    const dataUrl = await copyLongImageToClipboard(codeContent, platform, modelName);
+                    const dataUrl = await getOrCreateGlobalScreenshot(codeContent, platform);
                     const a = document.createElement('a');
                     a.href = dataUrl;
                     a.download = `${modelName || 'ui-design'}-${Date.now()}.png`;
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
                     showToast('✅ 图片已下载', 2000);
                 } catch (err) {
-                    console.error('Puppeteer 下载失败，使用 html2canvas 备用:', err);
-                    try {
-                        const imageData = await codeToImage(codeContent, platform);
-                        if (imageData) {
-                            await downloadImage(imageData, modelName || 'ui-design');
-                            showToast('✅ 图片已下载', 2000);
-                        } else {
-                            showToast('❌ 下载失败，请截图保存', 2000);
-                        }
-                    } catch (err2) { showToast('❌ 下载失败，请截图保存', 2000); }
+                    console.error('下载失败:', err);
+                    showToast('❌ 下载失败，请重试', 2000);
                 } finally {
                     dlBtn.disabled = false;
+                    copyBtn.disabled = false;
                     dlBtn.innerHTML = origInner;
                 }
             };

@@ -183,3 +183,21 @@ AI 生成的 HTML 页面通过 `iframe.srcdoc` 加载，其中的折线图、柱
 - 原因：viewHistoryItem 未从 IndexedDB 加载图片（imageUrl 未存入 localStorage）、代码预览使用分散的 inline style
 - 解决：viewHistoryItem 改为 async，使用 getImageFromDB() 加载图片；代码预览重构为统一卡片布局（标题栏+内容区+按钮区），根据 isDark 动态设置颜色
 - TODO：验证 buildCodeAnalysisHtml 是否需要 isDark 参数
+
+
+## 2026-04-24
+
+【SESSION LOG】
+- 改动：提示词优化逻辑重构，不再过度发挥，保留用户原始细节，禁止添加"输出设计思路"等元指令
+- 新增：清空输入按钮、全局截图缓存（卡片+弹窗共享）、生成状态细化显示（连接中→思考中→生成中→渲染中）
+- 问题：text-to-image-desc类型显示空白、浅色模式样式不适配、toast叠加、复制下载分别生成
+- 原因：codeContent优先级高于imageUrl、样式硬编码深色、无toast清理逻辑、缓存各自独立
+- 解决：判断image-description跳过code分支、buildCodeAnalysisHtml支持isDark参数、showToast先移除旧toast、screenshotCache全局Map
+- TODO：无
+【SESSION LOG 补充】
+- 改动："代码详情"标题改为"图片详情"、生成按钮位置上移(mt-4→mt-1)、浅色模式 iframe 预览区背景适配(#f5f3ee)
+- 新增：无
+- 问题：无
+- 原因：无
+- 解决：无
+- TODO：无
