@@ -313,8 +313,24 @@ const server = http.createServer(async (req, res) => {
           deviceScaleFactor: scale
         });
 
-        // 等待重新渲染
-        await new Promise(r => setTimeout(r, 200));
+        // 视口高度变化会触发 Chart.js 响应式重绘（重新播放动画），
+        // 若立即截图会拍到动画未完成的状态（如折线还没画出来 → 红色曲线消失）。
+        // 这里强制关闭动画并同步重绘所有图表，确保曲线完整再截图。
+        await page.evaluate(() => {
+          if (typeof window.Chart === 'undefined' || !window.Chart.getChart) return;
+          document.querySelectorAll('canvas').forEach(canvas => {
+            const chart = window.Chart.getChart(canvas);
+            if (!chart) return;
+            try {
+              chart.options.animation = false;
+              chart.resize();
+              chart.update('none'); // 'none' = 无动画立即重绘
+            } catch (e) {}
+          });
+        });
+
+        // 等待图表及其它动态内容重绘完成
+        await new Promise(r => setTimeout(r, 600));
 
         // 截图
         const screenshotBuffer = await page.screenshot({

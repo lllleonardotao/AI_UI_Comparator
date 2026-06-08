@@ -1557,6 +1557,28 @@
                 </div>
             </div>
 
+            <div class="divider my-6"></div>
+
+            <!-- Model Changelog -->
+            <div class="mb-2">
+                <button onclick="toggleModelChangelog()" type="button"
+                    class="w-full flex items-center justify-between bg-stone-800/30 hover:bg-stone-800/60 rounded-xl px-4 py-3 transition border border-stone-700/50">
+                    <span class="flex items-center gap-2 text-stone-300 text-sm font-medium">
+                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        模型更新日志
+                    </span>
+                    <svg id="modelChangelogChevron" class="w-4 h-4 text-stone-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="modelChangelog" class="hidden mt-3 space-y-4 max-h-64 overflow-y-auto scrollbar-styled pr-1">
+                    <!-- 更新日志将在这里动态生成 -->
+                </div>
+            </div>
+
             <div class="flex gap-3 mt-8">
                 <button onclick="saveSettings()" class="flex-1 btn-primary py-3.5 rounded-xl font-semibold">
                     <span>保存设置</span>
@@ -1664,6 +1686,21 @@
     <div id="imageModal"
         class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50 modal-backdrop"
         onclick="if(event.target===this)closeImageModal()">
+        <!-- 左右切换箭头 -->
+        <button id="modalPrevBtn" onclick="event.stopPropagation(); navigateModal(-1)" title="上一张 (←)"
+            style="left: max(12px, calc((100vw - min(92vw, 1400px)) / 4 - 24px));"
+            class="hidden absolute top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur text-white items-center justify-center transition z-10 border border-white/10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+        <button id="modalNextBtn" onclick="event.stopPropagation(); navigateModal(1)" title="下一张 (→)"
+            style="right: max(12px, calc((100vw - min(92vw, 1400px)) / 4 - 24px));"
+            class="hidden absolute top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 hover:bg-black/75 backdrop-blur text-white items-center justify-center transition z-10 border border-white/10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
         <div class="flex flex-row items-stretch gap-4 w-[92vw] max-w-[1400px] h-[95vh]">
             <!-- 左：图片区 -->
             <div class="flex-1 min-w-0 flex flex-col bg-[#0c0a09] rounded-2xl overflow-hidden">
@@ -1891,27 +1928,27 @@
                 provider: 'fitai'
             },
             'fitai-claude-opus': {
-                name: 'Claude Opus 4.6',
+                name: 'Claude Opus 4.8',
                 desc: '最强',
-                model: 'claude-opus-4-6',
+                model: 'claude-opus-4-8',
                 cost: 0,
                 type: 'code',
                 timeout: 150000,
                 provider: 'fitai'
             },
             'fitai-kimi': {
-                name: 'Kimi K2.5',
+                name: 'Kimi K2.6',
                 desc: '深思',
-                model: 'kimi-k2.5',
+                model: 'kimi-k2.6',
                 cost: 0,
                 type: 'code',
                 timeout: 150000,  // 2.5分钟，深度思考需要更多时间
                 provider: 'fitai'
             },
             'fitai-gpt-5.4': {
-                name: 'GPT 5.4',
-                desc: '896K，不读图',
-                model: 'gpt-5.4',
+                name: 'GPT 5.5',
+                desc: '800K，不读图',
+                model: 'gpt-5.5',
                 cost: 0,
                 type: 'code',
                 timeout: 180000,  // 3分钟，GPT响应较慢
@@ -2563,6 +2600,53 @@
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
             cb.addEventListener('change', updateCostEstimate);
         });
+
+        // 模型更新日志（最新的放最前面）
+        const MODEL_CHANGELOG = [
+            {
+                date: '2026-06-08',
+                items: [
+                    { type: 'fix',     text: 'Kimi 升级 K2.5 → K2.6（旧版已下线，修复调用报错）' },
+                    { type: 'upgrade', text: 'Claude Opus 4.6 → 4.8（当前最强，读图 + 1024K 上下文）' },
+                    { type: 'upgrade', text: 'GPT 5.4 → 5.5（输出上限 128K → 240K，长代码更稳）' },
+                ]
+            },
+        ];
+
+        function toggleModelChangelog() {
+            const panel = document.getElementById('modelChangelog');
+            const chevron = document.getElementById('modelChangelogChevron');
+            const willShow = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden');
+            chevron.style.transform = willShow ? 'rotate(180deg)' : '';
+            if (willShow && !panel.dataset.rendered) {
+                renderModelChangelog();
+                panel.dataset.rendered = '1';
+            }
+        }
+
+        function renderModelChangelog() {
+            const panel = document.getElementById('modelChangelog');
+            const tagStyle = {
+                fix:     { label: '修复', cls: 'bg-red-500/15 text-red-400' },
+                upgrade: { label: '升级', cls: 'bg-emerald-500/15 text-emerald-400' },
+                new:     { label: '新增', cls: 'bg-blue-500/15 text-blue-400' },
+            };
+            panel.innerHTML = MODEL_CHANGELOG.map(entry => `
+                <div>
+                    <div class="text-stone-400 text-xs font-semibold mb-2">${entry.date}</div>
+                    <div class="space-y-1.5">
+                        ${entry.items.map(it => {
+                            const t = tagStyle[it.type] || tagStyle.new;
+                            return `<div class="flex items-start gap-2 text-xs">
+                                <span class="flex-shrink-0 px-1.5 py-0.5 rounded ${t.cls} font-medium">${t.label}</span>
+                                <span class="text-stone-300 leading-relaxed">${it.text}</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
 
         // 设置相关
         function showSettings() {
@@ -3894,12 +3978,10 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 // 对于响应较慢的模型，给予更长的超时时间
                 if (model.includes('claude-opus')) {
                     return 150000; // Claude Opus: 150秒（非常慢）
-                } else if (model.includes('claude-sonnet-4.5')) {
-                    return 120000; // Claude Sonnet 4.5: 120秒
-                } else if (model.includes('deepseek') || model.includes('qwen')) {
-                    return 100000; // DeepSeek/Qwen: 100秒
-                } else if (model.includes('gpt-4')) {
-                    return 110000; // GPT-4 系列：110秒
+                } else if (model.includes('claude-sonnet')) {
+                    return 120000; // Claude Sonnet: 120秒
+                } else if (model.includes('gpt-5')) {
+                    return 110000; // GPT-5 系列：110秒
                 } else {
                     return 90000; // 默认：90秒
                 }
@@ -4024,14 +4106,10 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                             return 6000; // 免费模型：增加到6000 tokens（约4500字代码）
                         } else if (model.includes('claude-opus')) {
                             return 8000; // Claude Opus：增加到8000（确保完整代码，即使响应慢也要保证完整性）
-                        } else if (model.includes('claude-sonnet-4.5')) {
-                            return 6000; // Claude Sonnet 4.5：增加到6000 tokens
-                        } else if (model.includes('gpt-4o')) {
-                            return 8000; // GPT-4o：明确设置为8000 tokens（确保完整代码）
-                        } else if (model.includes('gpt-4')) {
-                            return 8000; // GPT-4 系列：8000 tokens（确保完整代码）
-                        } else if (model.includes('deepseek') || model.includes('qwen')) {
-                            return 4000; // DeepSeek/Qwen：4000 tokens
+                        } else if (model.includes('claude-sonnet')) {
+                            return 6000; // Claude Sonnet：6000 tokens
+                        } else if (model.includes('gpt-5')) {
+                            return 8000; // GPT-5 系列：8000 tokens（确保完整代码）
                         } else {
                             return 8000; // 其他付费模型：8000 tokens（确保完整页面）
                         }
@@ -5251,18 +5329,85 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                 </div>`;
         }
 
-        function showImageModal(imageUrl, modelName = '', cost = null, codeContent = null) {
+        // ── 详情弹窗左右切换：横跨本次生成的全部结果（图片 + 代码 + 失败占位）──
+        let modalNavList = [];
+        let modalNavIndex = -1;
+
+        function getCurrentPlatform() {
+            const r = document.querySelector('input[name="platform"]:checked');
+            return r ? r.value : 'mobile';
+        }
+
+        // 是否按"代码预览"形态展示（有代码、且没有真实图片）
+        function isCodeResult(r) {
+            const hasRealImg = r.imageUrl && (r.imageUrl.startsWith('data:image') || r.imageUrl.startsWith('http'));
+            return !r.isError && !!r.codeContent && !hasRealImg;
+        }
+
+        // 根据当前模型名重建导航列表与索引（列表 = 本次所有结果，含失败）
+        function setModalNav(modelName) {
+            modalNavList = currentResults.filter(r => r.imageUrl || r.codeContent || r.isError);
+            modalNavIndex = modalNavList.findIndex(r => r.modelName === modelName);
+            updateModalArrows();
+        }
+
+        // 同步两种弹窗的箭头显隐（≥2 个结果才显示）
+        function updateModalArrows() {
+            const show = modalNavList.length > 1;
+            ['modalPrevBtn', 'modalNextBtn'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) { b.classList.toggle('hidden', !show); b.classList.toggle('flex', show); }
+            });
+            document.querySelectorAll('.modal-nav-arrow').forEach(b => {
+                b.style.display = show ? 'flex' : 'none';
+            });
+        }
+
+        function navigateModal(dir) {
+            if (modalNavList.length < 2 || modalNavIndex === -1) return;
+            const i = (modalNavIndex + dir + modalNavList.length) % modalNavList.length;
+            openNavIndex(i);
+        }
+
+        // 打开导航列表中第 i 个结果，自动选择图片弹窗 / 代码预览弹窗
+        function openNavIndex(i) {
+            modalNavIndex = i;
+            const r = modalNavList[i];
+            const platform = getCurrentPlatform();
+            // 先清掉已存在的代码预览弹窗，避免堆叠
+            document.querySelectorAll('.code-preview-modal').forEach(m => m.remove());
+            if (isCodeResult(r)) {
+                const im = document.getElementById('imageModal');
+                im.classList.add('hidden'); im.classList.remove('flex');
+                showCodePreview(r.codeContent, r.modelName, platform);
+            } else {
+                showImageModal(r.imageUrl, r.modelName, r.cost, r.codeContent, r.isError);
+            }
+        }
+
+        function showImageModal(imageUrl, modelName = '', cost = null, codeContent = null, isError = false) {
             const isDark = document.documentElement.classList.contains('dark');
-            document.getElementById('modalImage').src = imageUrl;
+            // 切到图片弹窗时移除可能残留的代码预览弹窗
+            document.querySelectorAll('.code-preview-modal').forEach(m => m.remove());
+            const imgEl = document.getElementById('modalImage');
+            const hasImg = imageUrl && !isError;
+            imgEl.style.display = hasImg ? '' : 'none';
+            imgEl.src = hasImg ? imageUrl : '';
             document.getElementById('imageModal').classList.remove('hidden');
             document.getElementById('imageModal').classList.add('flex');
+            setModalNav(modelName);
 
             // 填入右侧信息面板
             const infoPanel = document.getElementById('modalInfoPanel');
             if (infoPanel) {
                 const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
                 const cardBorder = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
-                const analysisHtml = codeContent
+                const analysisHtml = isError
+                    ? `<div style="padding:14px 16px;background:${cardBg};border-radius:10px;border:1px solid ${cardBorder};margin-top:0;">
+                           <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">状态</div>
+                           <span style="color:#f87171;font-size:12px;">该模型本次生成失败，可用左右箭头查看其它结果</span>
+                       </div>`
+                    : codeContent
                     ? buildCodeAnalysisHtml(codeContent, isDark)
                     : `<div style="padding:14px 16px;background:${cardBg};border-radius:10px;border:1px solid ${cardBorder};margin-top:0;">
                            <div style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">设计思路</div>
@@ -5277,7 +5422,8 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                         <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
                             <span style="color:#78716c;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">输出类型</span>
                             <span style="color:#e7e5e4;font-size:13px;font-weight:600;">${
-                                !codeContent ? '图片生成'
+                                isError ? '生成失败'
+                                : !codeContent ? '图片生成'
                                 : /^<!--\s*image-description:/i.test(codeContent) ? '描述→图片'
                                 : '代码截图'
                             }</span>
@@ -5306,7 +5452,20 @@ Avoid: 3D elements, realistic photos, cartoon style`;
         function closeImageModal() {
             document.getElementById('imageModal').classList.add('hidden');
             document.getElementById('imageModal').classList.remove('flex');
+            modalNavList = [];
+            modalNavIndex = -1;
         }
+
+        // 弹窗打开时支持键盘 ← / → 切换结果（图片弹窗 + 代码预览弹窗通用）
+        document.addEventListener('keydown', (e) => {
+            const imgModal = document.getElementById('imageModal');
+            const imgOpen = imgModal && !imgModal.classList.contains('hidden');
+            const codeOpen = !!document.querySelector('.code-preview-modal');
+            if (!imgOpen && !codeOpen) return;
+            if (e.key === 'ArrowLeft') { e.preventDefault(); navigateModal(-1); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); navigateModal(1); }
+            else if (e.key === 'Escape' && imgOpen) { closeImageModal(); }
+        });
 
         /**
          * 下载代码为 HTML 文件
@@ -6539,17 +6698,36 @@ Avoid: 3D elements, realistic photos, cartoon style`;
 
         // 显示代码预览大图（全屏预览）
         function showCodePreview(codeContent, modelName, platform = 'mobile') {
+            // 移除已存在的代码预览弹窗，避免堆叠
+            document.querySelectorAll('.code-preview-modal').forEach(m => m.remove());
             const handleEsc = (e) => {
                 if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', handleEsc); }
             };
 
+            // 主题感知蒙层背景：与「图片详情」弹窗统一（浅色主题用暖灰半透明）
+            const isDark = document.documentElement.classList.contains('dark');
+            const overlayBg = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(120,113,108,0.6)';
+
             // 全屏蒙层
             const modal = document.createElement('div');
-            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+            modal.className = 'code-preview-modal';
+            modal.style.cssText = `position:fixed;inset:0;background:${overlayBg};backdrop-filter:blur(12px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;`;
             modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); document.removeEventListener('keydown', handleEsc); } });
 
-            // 主题判断提前
-            const isDark = document.documentElement.classList.contains('dark');
+            // 左右切换箭头（与图片弹窗一致），导航列表横跨图片+代码结果
+            const arrowSvg = (dir) => dir < 0
+                ? '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>'
+                : '<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+            [-1, 1].forEach(dir => {
+                const arrow = document.createElement('button');
+                arrow.className = 'modal-nav-arrow';
+                arrow.style.cssText = `position:absolute;${dir < 0 ? 'left' : 'right'}:max(12px, calc((100vw - min(92vw, 1400px)) / 4 - 24px));top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:9999px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:10;transition:background 0.15s;`;
+                arrow.innerHTML = arrowSvg(dir);
+                arrow.onmouseenter = () => arrow.style.background = 'rgba(0,0,0,0.75)';
+                arrow.onmouseleave = () => arrow.style.background = 'rgba(0,0,0,0.5)';
+                arrow.onclick = (e) => { e.stopPropagation(); navigateModal(dir); };
+                modal.appendChild(arrow);
+            });
 
             // 内容区：左右布局
             const wrap = document.createElement('div');
@@ -6693,6 +6871,9 @@ Avoid: 3D elements, realistic photos, cartoon style`;
             modal.appendChild(wrap);
             document.body.appendChild(modal);
             document.addEventListener('keydown', handleEsc);
+
+            // 建立导航（含图片+代码+失败），并刷新箭头显隐
+            setModalNav(modelName);
         }
     </script>
 </body>
