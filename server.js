@@ -282,9 +282,28 @@ const server = http.createServer(async (req, res) => {
         });
 
         // 加载 HTML 内容
-        await page.setContent(html, {
-          waitUntil: ['networkidle0', 'domcontentloaded']
-        });
+        // 注意：不要用 networkidle0 —— 生成的页面常引用 CDN 脚本/字体/埋点等，
+        // 这些连接可能长时间不结束，导致 networkidle0 永远不触发、整个截图请求挂死（按钮一直 loading）。
+        // 改用 domcontentloaded + 显式超时兜底，再配合后续的固定等待时间完成渲染。
+        try {
+          await page.setContent(html, {
+            waitUntil: 'domcontentloaded',
+            timeout: 30000
+          });
+        } catch (e) {
+          // setContent 超时（如外部资源卡住）时不放弃，继续用已加载的内容截图
+          console.warn('⚠️ setContent 超时，使用已加载内容继续截图:', e.message);
+        }
+
+        // 有界地等待网络空闲：让 CDN 脚本/字体/图片在快的时候加载完，
+        // 但最多等 8 秒，避免某个挂起的连接拖垮整个请求。
+        try {
+          if (typeof page.waitForNetworkIdle === 'function') {
+            await page.waitForNetworkIdle({ idleTime: 500, timeout: 8000 });
+          }
+        } catch (e) {
+          // 超时即视为加载完成，继续截图
+        }
 
         // 等待额外渲染时间（动画等）
         await new Promise(r => setTimeout(r, 500));
