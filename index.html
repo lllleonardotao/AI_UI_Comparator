@@ -4138,6 +4138,14 @@ Avoid: 3D elements, realistic photos, cartoon style`;
                     })()
                 };
 
+                // GPT-5 系列默认使用"最高推理强度"，会把 max_tokens 全部消耗在内部推理上，
+                // 导致 finish_reason=length 且正文为空（生成失败）。实测将 reasoning_effort
+                // 降到 'low' 即可正常产出完整代码（仅 ~7000 tokens），且保留基本推理质量。
+                // 注意：该参数只对 gpt-5 系列下发——其它模型可能不支持，下发会报 400。
+                if (model.includes('gpt-5')) {
+                    requestBody.reasoning_effort = 'low';
+                }
+
                 const response = await makeRequestWithRetry(requestBody);
                 if (onStatusUpdate) onStatusUpdate('生成代码中...');
 
